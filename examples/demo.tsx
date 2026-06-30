@@ -1,7 +1,14 @@
 import { createRoot } from "react-dom/client";
 import { useMemo, useState } from "react";
-import { MapaMexico } from "../src/react";
-import type { Estado } from "../src/index";
+import { MapaMexico, Leyenda } from "../src/react";
+import {
+  ESTADOS,
+  REGIONES,
+  REGION_POR_ESTADO,
+  escalaCategorica,
+  type Estado,
+  type NombrePaleta,
+} from "../src/index";
 import { MapaMunicipios, municipios, type Municipio } from "../src/municipios";
 
 const TIENDAS: Record<string, number> = {
@@ -42,20 +49,45 @@ const TIENDAS: Record<string, number> = {
 const fmt = (n: number) => n.toLocaleString("es-MX");
 const rand = () => Math.floor(20 + Math.random() * Math.random() * 480);
 
+// Paletas que ofrece el selector de la demo.
+const PALETAS_DEMO: { valor: NombrePaleta; etiqueta: string }[] = [
+  { valor: "azul", etiqueta: "Azul" },
+  { valor: "walmart", etiqueta: "Walmart" },
+  { valor: "verde", etiqueta: "Verde" },
+  { valor: "naranja", etiqueta: "Naranja" },
+  { valor: "morado", etiqueta: "Morado" },
+  { valor: "teal", etiqueta: "Teal" },
+];
+
+// Colores de las regiones, en el mismo orden que pinta <MapaMexico> (orden
+// oficial de los estados), para que la leyenda concuerde con el mapa.
+const COLOR_REGION = escalaCategorica(ESTADOS.map((e) => REGION_POR_ESTADO[e.cve]!));
+const LEYENDA_REGIONES = REGIONES.map(
+  (r) => [r.nombre, COLOR_REGION.get(r.reg) ?? "#ccc"] as [string, string],
+);
+
+type Modo = "base" | "tiendas" | "rand" | "regiones";
+
 function App() {
-  const [mode, setMode] = useState<"base" | "tiendas" | "rand">("tiendas");
+  const [mode, setMode] = useState<Modo>("tiendas");
+  const [paleta, setPaleta] = useState<NombrePaleta>("azul");
   const [seed, setSeed] = useState(0);
   const [estadoSel, setEstadoSel] = useState<Estado | null>(null);
   const [muniSel, setMuniSel] = useState<Municipio | null>(null);
   const [drill, setDrill] = useState<Estado | null>(null);
 
   const data = useMemo<Record<string, number> | undefined>(() => {
-    if (mode === "base") return undefined;
+    if (mode === "base" || mode === "regiones") return undefined;
     if (mode === "tiendas") return TIENDAS;
     const r: Record<string, number> = {};
     for (const cve of Object.keys(TIENDAS)) r[cve] = rand();
     return r;
   }, [mode, seed]);
+
+  const dominio = useMemo<[number, number]>(() => {
+    const vals = data ? Object.values(data) : [];
+    return vals.length ? [Math.min(...vals), Math.max(...vals)] : [0, 0];
+  }, [data]);
 
   // datos demo por municipio del estado en drill-down
   const muniData = useMemo<Record<string, number>>(() => {
@@ -64,7 +96,7 @@ function App() {
     return r;
   }, [drill, seed]);
 
-  const btn = (m: typeof mode, label: string) => (
+  const btn = (m: Modo, label: string) => (
     <button
       className={mode === m ? "on" : ""}
       onClick={() => {
@@ -89,21 +121,51 @@ function App() {
             {btn("base", "Mapa base")}
             {btn("tiendas", "Tiendas (demo)")}
             {btn("rand", "Aleatorio ⟳")}
+            {btn("regiones", "Regiones")}
+            {mode === "tiendas" || mode === "rand" ? (
+              <label className="sel">
+                Paleta:
+                <select value={paleta} onChange={(e) => setPaleta(e.target.value as NombrePaleta)}>
+                  {PALETAS_DEMO.map((p) => (
+                    <option key={p.valor} value={p.valor}>
+                      {p.etiqueta}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            ) : null}
             <span className="tipText">Haz clic en un estado para ver sus municipios →</span>
           </div>
           <div className="stage">
             <div className="map">
               <MapaMexico
                 data={data}
+                categorias={mode === "regiones" ? REGION_POR_ESTADO : undefined}
+                paleta={paleta}
                 onSelect={(e) => {
                   setEstadoSel(e);
                   setDrill(e);
                   setMuniSel(null);
                   setSeed((s) => s + 1);
                 }}
-                colorRange={["#dbeafe", "#1e3a8a"]}
                 formatValue={(v) => fmt(v)}
               />
+              {mode === "regiones" ? (
+                <Leyenda
+                  tipo="categorias"
+                  titulo="Región (Banxico)"
+                  categorias={LEYENDA_REGIONES}
+                  className="leyenda"
+                />
+              ) : data ? (
+                <Leyenda
+                  dominio={dominio}
+                  paleta={paleta}
+                  titulo={mode === "tiendas" ? "Tiendas" : "Valor"}
+                  formato={(v) => fmt(v)}
+                  className="leyenda"
+                />
+              ) : null}
             </div>
             <aside className="panel">
               {estadoSel ? (
@@ -113,8 +175,14 @@ function App() {
                   <dl>
                     <dt>Capital</dt>
                     <dd>{estadoSel.capital}</dd>
-                    <dt>ISO</dt>
-                    <dd>{estadoSel.iso}</dd>
+                    <dt>Región</dt>
+                    <dd>{estadoSel.region}</dd>
+                    <dt>Población (2020)</dt>
+                    <dd>{fmt(estadoSel.poblacion)}</dd>
+                    <dt>Superficie</dt>
+                    <dd>{fmt(estadoSel.superficie)} km²</dd>
+                    <dt>Huso</dt>
+                    <dd>{estadoSel.huso}</dd>
                     {data && (
                       <>
                         <dt>Tiendas (demo)</dt>
@@ -151,7 +219,7 @@ function App() {
                 estado={drill.cve}
                 data={muniData}
                 onSelect={setMuniSel}
-                colorRange={["#dcfce7", "#166534"]}
+                paleta="verde"
                 formatValue={(v) => fmt(v)}
               />
             </div>
@@ -178,8 +246,9 @@ function App() {
       )}
 
       <footer>
-        Geometría: Natural Earth (estados) y diegovalle/mxmaps · INEGI (municipios). Demo con los
-        componentes reales <code>&lt;MapaMexico&gt;</code> y <code>&lt;MapaMunicipios&gt;</code>.
+        Geometría: Natural Earth (estados) · INEGI, Marco Geoestadístico (municipios). Demo con los
+        componentes reales <code>&lt;MapaMexico&gt;</code>, <code>&lt;MapaMunicipios&gt;</code> y{" "}
+        <code>&lt;Leyenda&gt;</code>.
       </footer>
     </div>
   );

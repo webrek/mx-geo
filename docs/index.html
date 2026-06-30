@@ -15,8 +15,11 @@
   .bar button { font:inherit; font-size:13px; padding:7px 13px; border-radius:9px; border:1px solid #d8dce4; background:#fff; color:var(--ink); cursor:pointer; transition:.15s; }
   .bar button:hover { border-color:var(--brand); }
   .bar button.on { background:var(--brand); border-color:var(--brand); color:#fff; }
+  .bar .sel { font-size:13px; color:var(--muted); display:inline-flex; align-items:center; gap:6px; }
+  .bar .sel select { font:inherit; font-size:13px; padding:6px 9px; border-radius:9px; border:1px solid #d8dce4; background:#fff; color:var(--ink); cursor:pointer; }
   .stage { display:grid; grid-template-columns: 1fr 230px; gap:16px; align-items:start; }
-  .map { background:#fff; border:1px solid var(--line); border-radius:14px; padding:8px; }
+  .map { position:relative; background:#fff; border:1px solid var(--line); border-radius:14px; padding:8px; }
+  .map .leyenda { position:absolute; right:14px; bottom:14px; background:rgba(255,255,255,.92); border:1px solid var(--line); border-radius:10px; padding:10px 12px; box-shadow:0 1px 3px rgba(0,0,0,.06); min-width:120px; }
   .panel { background:#fff; border:1px solid var(--line); border-radius:14px; padding:16px; min-height:170px; }
   .panel .hint { color:#9ca3af; font-size:13px; }
   .panel h3 { margin:0 0 2px; font-size:18px; }
