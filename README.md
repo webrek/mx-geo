@@ -210,6 +210,13 @@ municipio("09012")?.nombre; // "Tlalpan"
 Para un **drill-down** completo: en el `onSelect` de `<MapaMexico>` guardas el
 estado y renderizas `<MapaMunicipios estado={cve} />` (ver `examples/demo.tsx`).
 
+## Ejemplos
+
+En [`examples/`](./examples/) hay recetas cortas y copiables: choropleth con
+paleta, mapa por región, zonas a la medida, drill-down, normalizar una columna
+de texto, subir cifras municipales al mapa nacional, escalas sin React,
+cuantiles y el patrón de Next.js App Router.
+
 ## Datos, fuentes y precisión
 
 - **Geometría:** [Natural Earth](https://www.naturalearthdata.com/) (admin-1, 1:10m),
