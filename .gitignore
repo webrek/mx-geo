@@ -1,0 +1,4 @@
+node_modules
+dist
+*.tsbuildinfo
+scripts/ne10_admin1.geojson

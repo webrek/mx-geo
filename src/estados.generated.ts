@@ -1,0 +1,38 @@
+// GENERADO por scripts/build-data.mjs — no editar a mano.
+import type { Estado } from "./types";
+
+/** Los 32 estados de México con su CVE_ENT de INEGI. */
+export const ESTADOS: readonly Estado[] = [
+  { cve: "01", nombre: "Aguascalientes", nombreCorto: "Aguascalientes", abreviatura: "Ags.", iso: "MX-AGU", capital: "Aguascalientes", alias: [] },
+  { cve: "02", nombre: "Baja California", nombreCorto: "Baja California", abreviatura: "BC", iso: "MX-BCN", capital: "Mexicali", alias: ["bc"] },
+  { cve: "03", nombre: "Baja California Sur", nombreCorto: "Baja California Sur", abreviatura: "BCS", iso: "MX-BCS", capital: "La Paz", alias: ["bcs"] },
+  { cve: "04", nombre: "Campeche", nombreCorto: "Campeche", abreviatura: "Camp.", iso: "MX-CAM", capital: "San Francisco de Campeche", alias: [] },
+  { cve: "05", nombre: "Coahuila de Zaragoza", nombreCorto: "Coahuila", abreviatura: "Coah.", iso: "MX-COA", capital: "Saltillo", alias: ["coahuila"] },
+  { cve: "06", nombre: "Colima", nombreCorto: "Colima", abreviatura: "Col.", iso: "MX-COL", capital: "Colima", alias: [] },
+  { cve: "07", nombre: "Chiapas", nombreCorto: "Chiapas", abreviatura: "Chis.", iso: "MX-CHP", capital: "Tuxtla Gutiérrez", alias: [] },
+  { cve: "08", nombre: "Chihuahua", nombreCorto: "Chihuahua", abreviatura: "Chih.", iso: "MX-CHH", capital: "Chihuahua", alias: [] },
+  { cve: "09", nombre: "Ciudad de México", nombreCorto: "Ciudad de México", abreviatura: "CDMX", iso: "MX-CMX", capital: "Ciudad de México", alias: ["cdmx","df","distrito federal","ciudad de mexico"] },
+  { cve: "10", nombre: "Durango", nombreCorto: "Durango", abreviatura: "Dgo.", iso: "MX-DUR", capital: "Victoria de Durango", alias: [] },
+  { cve: "11", nombre: "Guanajuato", nombreCorto: "Guanajuato", abreviatura: "Gto.", iso: "MX-GUA", capital: "Guanajuato", alias: [] },
+  { cve: "12", nombre: "Guerrero", nombreCorto: "Guerrero", abreviatura: "Gro.", iso: "MX-GRO", capital: "Chilpancingo de los Bravo", alias: [] },
+  { cve: "13", nombre: "Hidalgo", nombreCorto: "Hidalgo", abreviatura: "Hgo.", iso: "MX-HID", capital: "Pachuca de Soto", alias: [] },
+  { cve: "14", nombre: "Jalisco", nombreCorto: "Jalisco", abreviatura: "Jal.", iso: "MX-JAL", capital: "Guadalajara", alias: [] },
+  { cve: "15", nombre: "México", nombreCorto: "Estado de México", abreviatura: "Méx.", iso: "MX-MEX", capital: "Toluca de Lerdo", alias: ["estado de mexico","edomex","edo. mex.","edo mex"] },
+  { cve: "16", nombre: "Michoacán de Ocampo", nombreCorto: "Michoacán", abreviatura: "Mich.", iso: "MX-MIC", capital: "Morelia", alias: ["michoacan"] },
+  { cve: "17", nombre: "Morelos", nombreCorto: "Morelos", abreviatura: "Mor.", iso: "MX-MOR", capital: "Cuernavaca", alias: [] },
+  { cve: "18", nombre: "Nayarit", nombreCorto: "Nayarit", abreviatura: "Nay.", iso: "MX-NAY", capital: "Tepic", alias: [] },
+  { cve: "19", nombre: "Nuevo León", nombreCorto: "Nuevo León", abreviatura: "NL", iso: "MX-NLE", capital: "Monterrey", alias: ["nl","nuevo leon"] },
+  { cve: "20", nombre: "Oaxaca", nombreCorto: "Oaxaca", abreviatura: "Oax.", iso: "MX-OAX", capital: "Oaxaca de Juárez", alias: [] },
+  { cve: "21", nombre: "Puebla", nombreCorto: "Puebla", abreviatura: "Pue.", iso: "MX-PUE", capital: "Puebla de Zaragoza", alias: [] },
+  { cve: "22", nombre: "Querétaro", nombreCorto: "Querétaro", abreviatura: "Qro.", iso: "MX-QUE", capital: "Santiago de Querétaro", alias: ["queretaro"] },
+  { cve: "23", nombre: "Quintana Roo", nombreCorto: "Quintana Roo", abreviatura: "Q.R.", iso: "MX-ROO", capital: "Chetumal", alias: ["quintana roo","qroo","qr"] },
+  { cve: "24", nombre: "San Luis Potosí", nombreCorto: "San Luis Potosí", abreviatura: "SLP", iso: "MX-SLP", capital: "San Luis Potosí", alias: ["slp","san luis potosi"] },
+  { cve: "25", nombre: "Sinaloa", nombreCorto: "Sinaloa", abreviatura: "Sin.", iso: "MX-SIN", capital: "Culiacán Rosales", alias: [] },
+  { cve: "26", nombre: "Sonora", nombreCorto: "Sonora", abreviatura: "Son.", iso: "MX-SON", capital: "Hermosillo", alias: [] },
+  { cve: "27", nombre: "Tabasco", nombreCorto: "Tabasco", abreviatura: "Tab.", iso: "MX-TAB", capital: "Villahermosa", alias: [] },
+  { cve: "28", nombre: "Tamaulipas", nombreCorto: "Tamaulipas", abreviatura: "Tamps.", iso: "MX-TAM", capital: "Ciudad Victoria", alias: [] },
+  { cve: "29", nombre: "Tlaxcala", nombreCorto: "Tlaxcala", abreviatura: "Tlax.", iso: "MX-TLA", capital: "Tlaxcala de Xicohténcatl", alias: [] },
+  { cve: "30", nombre: "Veracruz de Ignacio de la Llave", nombreCorto: "Veracruz", abreviatura: "Ver.", iso: "MX-VER", capital: "Xalapa-Enríquez", alias: ["veracruz"] },
+  { cve: "31", nombre: "Yucatán", nombreCorto: "Yucatán", abreviatura: "Yuc.", iso: "MX-YUC", capital: "Mérida", alias: ["yucatan"] },
+  { cve: "32", nombre: "Zacatecas", nombreCorto: "Zacatecas", abreviatura: "Zac.", iso: "MX-ZAC", capital: "Zacatecas", alias: [] },
+] as const;

@@ -1,0 +1,6 @@
+dist
+node_modules
+data
+src/estados.generated.ts
+scripts/*.geojson
+pnpm-lock.yaml

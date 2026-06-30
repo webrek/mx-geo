@@ -1,0 +1,86 @@
+{
+  "name": "@webrek/mx-geo",
+  "version": "0.1.0",
+  "description": "Mapa de México por estados (división política con claves INEGI) para dashboards: TopoJSON + catálogo tipado + componente React choropleth, sin API keys.",
+  "keywords": [
+    "mexico",
+    "mapa",
+    "estados",
+    "inegi",
+    "choropleth",
+    "topojson",
+    "geojson",
+    "react"
+  ],
+  "license": "MIT",
+  "author": "webrek",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/webrek/mx-geo.git"
+  },
+  "type": "module",
+  "sideEffects": false,
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
+  },
+  "files": [
+    "dist",
+    "data"
+  ],
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./react": {
+      "types": "./dist/react.d.ts",
+      "import": "./dist/react.js",
+      "require": "./dist/react.cjs"
+    },
+    "./data/estados.topo.json": "./data/estados.topo.json"
+  },
+  "scripts": {
+    "build:data": "node scripts/build-data.mjs && mapshaper scripts/estados.geojson -simplify 6% keep-shapes -clean -o format=topojson data/estados.topo.json",
+    "build": "tsup",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "check": "pnpm format:check && pnpm typecheck && pnpm test && pnpm build",
+    "prepublishOnly": "pnpm build"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0 || ^19.0.0"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    }
+  },
+  "dependencies": {
+    "d3-geo": "^3.1.1",
+    "topojson-client": "^3.1.0"
+  },
+  "devDependencies": {
+    "@testing-library/react": "^16.1.0",
+    "@types/d3-geo": "^3.1.0",
+    "@types/geojson": "^7946.0.14",
+    "@types/node": "^22.10.2",
+    "@types/react": "^19.0.2",
+    "@types/topojson-client": "^3.1.5",
+    "jsdom": "^25.0.1",
+    "mapshaper": "^0.6.102",
+    "prettier": "^3.4.2",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "tsup": "^8.3.5",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  }
+}
