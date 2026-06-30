@@ -4,6 +4,35 @@ Todas las versiones notables de este paquete se documentan aquí.
 El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/)
 y el versionado es [SemVer](https://semver.org/lang/es/).
 
+## [0.4.0]
+
+### Agregado
+
+- **Paletas de color con nombre.** Los mapas aceptan una prop `paleta` con un
+  nombre integrado (`"azul"`, `"verde"`, `"rojo"`, `"naranja"`, `"morado"`,
+  `"teal"`, `"rosa"`, `"ambar"`, `"gris"`, `"walmart"`), una paleta divergente
+  (`"rojoVerde"`, `"azulRojo"`, `"moradoVerde"`) o tu propia lista de colores.
+  Se exportan `PALETAS`, `PALETAS_DIVERGENTES` y `PALETA_CATEGORICA`, además de
+  los helpers `resuelvePaleta`, `interpolaPaleta`, `escalaSecuencial`,
+  `escalaCuantil` y `escalaCategorica`.
+- **Modo categórico** en `<MapaMexico>`: con la prop `categorias`
+  (`CVE_ENT -> categoría`) pinta el país por región o por tus propias zonas de
+  venta, con colores discretos.
+- **Regiones / zonas.** Nuevo catálogo `REGIONES` (regionalización de Banxico:
+  Norte, Centro Norte, Centro y Sur) con `region()`, `estadosDeRegion()` y el
+  mapa listo para usar `REGION_POR_ESTADO`.
+- **Catálogo enriquecido.** Cada `Estado` trae ahora `region`, `poblacion`
+  (Censo INEGI 2020), `superficie` (km²) y `huso` (zona horaria IANA).
+- **Componente `<Leyenda>`** (`@webrek/mx-geo/react`): degradado continuo,
+  escalones por cuantil o categorías discretas; HTML puro, sin dependencias.
+- **Helper `agregaMunicipiosAEstado`**: sube datos a nivel municipio (CVEGEO) a
+  nivel estado (CVE_ENT) para pintar `<MapaMexico>` con cifras municipales.
+
+### Compatibilidad
+
+- `colorRange` sigue funcionando en ambos mapas; si pasas `paleta`, esta tiene
+  prioridad. Sin cambios incompatibles respecto a 0.3.0.
+
 ## [0.3.0]
 
 ### Cambiado

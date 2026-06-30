@@ -7,11 +7,12 @@
 Mapa de **México por estados** para dashboards, con la división política llaveada por
 **claves de INEGI** (`CVE_ENT`). Trae tres cosas que normalmente tendrías que armar a mano:
 
-1. Un **catálogo tipado** de los 32 estados (clave INEGI, nombre oficial, nombre corto,
-   abreviatura, ISO 3166-2, capital).
+1. Un **catálogo tipado** de los 32 estados (clave INEGI, nombre, ISO 3166-2, capital,
+   **región, población del Censo 2020, superficie y huso horario**).
 2. Un **TopoJSON** ligero (~17 KB) de las 32 geometrías, ya llaveado por `CVE_ENT`.
 3. Un componente **React choropleth** (`<MapaMexico>`) que se pinta solo con tus datos —
-   SVG puro, **sin librería de mapas ni API key**.
+   SVG puro, **sin librería de mapas ni API key**— con **paletas con nombre**, **modo
+   categórico** (por región o tus zonas) y un componente **`<Leyenda>`**.
 
 El núcleo de datos (catálogo + TopoJSON + helpers) no depende de React; el componente
 vive en el subpath `@webrek/mx-geo/react`.
@@ -71,16 +72,107 @@ se pintan con `emptyColor`, así que también sirve como mapa base estático.
 
 ### Props
 
-| Prop          | Tipo                       | Por defecto                    | Descripción                                 |
-| ------------- | -------------------------- | ------------------------------ | ------------------------------------------- |
-| `data`        | `Record<string, number>`   | —                              | Valores por `CVE_ENT`. Sin esto, mapa base. |
-| `colorRange`  | `[string, string]`         | `["#dbeafe","#1e3a8a"]`        | Color [mínimo, máximo] del choropleth.      |
-| `emptyColor`  | `string`                   | `"#e5e7eb"`                    | Color de un estado sin dato.                |
-| `stroke`      | `string`                   | `"#ffffff"`                    | Color del borde.                            |
-| `onSelect`    | `(estado: Estado) => void` | —                              | Clic en un estado.                          |
-| `formatValue` | `(v, estado) => string`    | —                              | Formato del valor en el tooltip.            |
-| `ariaLabel`   | `string`                   | `"Mapa de México por estados"` | Etiqueta accesible.                         |
-| `className`   | `string`                   | —                              | Clase del `<svg>`.                          |
+| Prop               | Tipo                       | Por defecto                    | Descripción                                     |
+| ------------------ | -------------------------- | ------------------------------ | ----------------------------------------------- |
+| `data`             | `Record<string, number>`   | —                              | Valores por `CVE_ENT`. Sin esto, mapa base.     |
+| `paleta`           | `nombre \| string[]`       | `"azul"`                       | Paleta del choropleth (ver abajo).              |
+| `colorRange`       | `[string, string]`         | —                              | Atajo de dos colores; `paleta` tiene prioridad. |
+| `categorias`       | `Record<string, string>`   | —                              | Modo categórico: `CVE_ENT -> categoría`.        |
+| `paletaCategorica` | `string[]`                 | `PALETA_CATEGORICA`            | Colores del modo categórico.                    |
+| `emptyColor`       | `string`                   | `"#e5e7eb"`                    | Color de un estado sin dato.                    |
+| `stroke`           | `string`                   | `"#ffffff"`                    | Color del borde.                                |
+| `onSelect`         | `(estado: Estado) => void` | —                              | Clic en un estado.                              |
+| `formatValue`      | `(v, estado) => string`    | —                              | Formato del valor en el tooltip.                |
+| `ariaLabel`        | `string`                   | `"Mapa de México por estados"` | Etiqueta accesible.                             |
+| `className`        | `string`                   | —                              | Clase del `<svg>`.                              |
+
+## Paletas y temas
+
+En vez de pasar dos colores a mano, elige una **paleta con nombre**. Hay
+secuenciales (`azul`, `verde`, `rojo`, `naranja`, `morado`, `teal`, `rosa`,
+`ambar`, `gris`, `walmart`), divergentes (`rojoVerde`, `azulRojo`,
+`moradoVerde`) o puedes pasar tu propia lista de colores.
+
+```tsx
+<MapaMexico data={ventas} paleta="walmart" />
+<MapaMexico data={crecimiento} paleta="rojoVerde" /> // divergente, con centro
+<MapaMexico data={ventas} paleta={["#f1f5f9", "#0ea5e9", "#0c4a6e"]} /> // a la medida
+```
+
+Las paletas y las escalas también viven sueltas (sin React), por si dibujas la
+leyenda o el mapa con otra herramienta:
+
+```ts
+import { escalaSecuencial, escalaCuantil, PALETAS } from "@webrek/mx-geo";
+
+const color = escalaSecuencial([0, 1000], "azul");
+color(750); // "#3b82f6"
+
+// Cuando los datos están sesgados, agrupa por cuantil:
+const { color: c, tramos } = escalaCuantil(Object.values(ventas), "verde", 5);
+```
+
+## Regiones / zonas
+
+El paquete trae la **regionalización de Banxico** (Norte, Centro Norte, Centro y
+Sur) y helpers para agrupar. Combínala con el modo categórico para pintar el
+país por región:
+
+```tsx
+import { MapaMexico } from "@webrek/mx-geo/react";
+import { REGION_POR_ESTADO, REGIONES, estadosDeRegion } from "@webrek/mx-geo";
+
+<MapaMexico categorias={REGION_POR_ESTADO} />; // cada región, un color
+
+estadosDeRegion("norte").map((e) => e.nombreCorto); // ["Baja California", …]
+```
+
+¿Tus propias zonas de venta? Pasa tu mapa `CVE_ENT -> zona` a `categorias`:
+
+```tsx
+<MapaMexico categorias={{ "19": "Bajío", "14": "Bajío", "09": "Metro" }} />
+```
+
+## Catálogo enriquecido
+
+Cada estado trae datos listos para tableros: **región**, **población**
+(Censo INEGI 2020), **superficie** (km²) y **huso horario** (IANA).
+
+```ts
+import { estado } from "@webrek/mx-geo";
+
+const e = estado("15");
+e?.poblacion; // 16992418  (Estado de México)
+e?.region; // "centro"
+e?.superficie; // 22357
+e?.huso; // "America/Mexico_City"
+```
+
+## Leyenda
+
+El componente `<Leyenda>` (en `@webrek/mx-geo/react`) acompaña al mapa en sus
+tres modos:
+
+```tsx
+import { Leyenda } from "@webrek/mx-geo/react";
+import { escalaCuantil } from "@webrek/mx-geo";
+
+<Leyenda dominio={[0, 1000]} paleta="azul" titulo="Ventas" />; // degradado
+<Leyenda tipo="cuantil" tramos={escalaCuantil(vals, "verde", 5).tramos} />; // escalones
+<Leyenda tipo="categorias" categorias={{ Norte: "#2563eb", Sur: "#16a34a" }} />;
+```
+
+## De municipios a estados
+
+¿Tienes cifras por municipio pero quieres el mapa nacional? Súbelas con
+`agregaMunicipiosAEstado` (suma por defecto):
+
+```ts
+import { agregaMunicipiosAEstado } from "@webrek/mx-geo";
+
+const porEstado = agregaMunicipiosAEstado({ "20067": 1200, "20001": 300 });
+// → { "20": 1500 }   listo para <MapaMexico data={porEstado} />
+```
 
 ## El TopoJSON directo
 

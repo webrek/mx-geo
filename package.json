@@ -1,6 +1,6 @@
 {
   "name": "@webrek/mx-geo",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Mapa de México por estados (división política con claves INEGI) para dashboards: TopoJSON + catálogo tipado + componente React choropleth, sin API keys.",
   "keywords": [
     "mexico",

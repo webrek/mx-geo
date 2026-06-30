@@ -12,6 +12,14 @@ export interface Estado {
   iso: string;
   /** Capital del estado. */
   capital: string;
+  /** Clave de la región (Banxico) a la que pertenece; ver `REGIONES`. */
+  region: string;
+  /** Población total (Censo de Población y Vivienda 2020, INEGI). */
+  poblacion: number;
+  /** Superficie en km² (INEGI, territorio continental e insular). */
+  superficie: number;
+  /** Zona horaria IANA principal del estado (p. ej. "America/Mexico_City"). */
+  huso: string;
   /** Otras formas de escribirlo que acepta la búsqueda. */
   alias: string[];
 }

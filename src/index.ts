@@ -6,6 +6,30 @@ export type { Estado };
 export { ESTADOS };
 export { normaliza, buscaEstado, normalizaEstado } from "./normaliza";
 
+// Regiones / zonas
+export { REGIONES, REGION_POR_ESTADO, region, estadosDeRegion, type Region } from "./regiones";
+
+// Colores, paletas y escalas (sin React)
+export {
+  PALETAS,
+  PALETAS_DIVERGENTES,
+  PALETA_CATEGORICA,
+  resuelvePaleta,
+  lerpHex,
+  interpolaPaleta,
+  escalaSecuencial,
+  escalaCuantil,
+  escalaCategorica,
+  type Paleta,
+  type PaletaInput,
+  type NombrePaleta,
+  type NombrePaletaDivergente,
+  type TramoCuantil,
+} from "./colores";
+
+// Helpers de agregación
+export { agregaMunicipiosAEstado } from "./agrega";
+
 /**
  * TopoJSON de los 32 estados, llaveado por `cve` (CVE_ENT de INEGI) en las
  * propiedades de cada geometría. Geometría: Natural Earth (dominio público),

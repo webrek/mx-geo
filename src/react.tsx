@@ -7,15 +7,39 @@ import type { Feature, Geometry } from "geojson";
 import { estadosTopoJSON } from "./index";
 import { ESTADOS } from "./estados.generated";
 import type { Estado } from "./types";
+import {
+  PALETA_CATEGORICA,
+  escalaCategorica,
+  interpolaPaleta,
+  resuelvePaleta,
+  type Paleta,
+  type PaletaInput,
+} from "./colores";
 
 type Props = {
   /** Valores por clave INEGI (CVE_ENT), p. ej. `{ "09": 1200, "14": 800 }`. */
   data?: Record<string, number>;
   /** Se llama al hacer clic en un estado. */
   onSelect?: (estado: Estado) => void;
-  /** Rango de color [mínimo, máximo] para el choropleth. */
+  /**
+   * Paleta del choropleth: nombre integrado (`"azul"`, `"verde"`, `"rojoVerde"`…)
+   * o una lista de colores hex. Por defecto `"azul"`.
+   */
+  paleta?: PaletaInput;
+  /**
+   * Rango de color `[mínimo, máximo]`. Atajo de dos colores; si pasas `paleta`,
+   * esta tiene prioridad. (Compatibilidad con versiones anteriores.)
+   */
   colorRange?: [string, string];
-  /** Color de un estado sin valor en `data`. */
+  /**
+   * Modo categórico: mapa `CVE_ENT -> categoría` (región, zona de venta…). Cada
+   * categoría recibe un color distinto de `paletaCategorica`. Tiene prioridad
+   * sobre `data` para el relleno.
+   */
+  categorias?: Record<string, string>;
+  /** Colores para el modo categórico. Por defecto, `PALETA_CATEGORICA`. */
+  paletaCategorica?: Paleta;
+  /** Color de un estado sin valor en `data` (o sin categoría). */
   emptyColor?: string;
   /** Color del borde. */
   stroke?: string;
@@ -31,31 +55,18 @@ const HEIGHT = 600;
 
 const PORCVE = new Map<string, Estado>(ESTADOS.map((e) => [e.cve, e]));
 
-/** Interpola dos colores hex (#rrggbb) en el punto t∈[0,1]. */
-function lerpHex(a: string, b: string, t: number): string {
-  const rgb = (h: string): [number, number, number] => [
-    parseInt(h.slice(1, 3), 16),
-    parseInt(h.slice(3, 5), 16),
-    parseInt(h.slice(5, 7), 16),
-  ];
-  const [ar, ag, ab] = rgb(a);
-  const [br, bg, bb] = rgb(b);
-  const mix = (x: number, y: number) =>
-    Math.round(x + (y - x) * t)
-      .toString(16)
-      .padStart(2, "0");
-  return `#${mix(ar, br)}${mix(ag, bg)}${mix(ab, bb)}`;
-}
-
 /**
  * Mapa choropleth de los 32 estados de México. SVG puro, sin librería de mapas
- * ni API key. Pinta cada estado según `data[cve]`; si no hay dato, usa
- * `emptyColor`.
+ * ni API key. Pinta cada estado según `data[cve]` (o por `categorias[cve]` en
+ * modo categórico); si no hay valor, usa `emptyColor`.
  */
 export function MapaMexico({
   data,
   onSelect,
-  colorRange = ["#dbeafe", "#1e3a8a"],
+  paleta,
+  colorRange,
+  categorias,
+  paletaCategorica = PALETA_CATEGORICA,
   emptyColor = "#e5e7eb",
   stroke = "#ffffff",
   formatValue,
@@ -64,6 +75,15 @@ export function MapaMexico({
 }: Props) {
   const titleId = useId();
   const [hover, setHover] = useState<string | null>(null);
+
+  const cols = useMemo<Paleta>(() => resuelvePaleta(paleta, colorRange), [paleta, colorRange]);
+
+  // Colores estables por categoría (en el orden oficial de los estados).
+  const colorPorCategoria = useMemo(() => {
+    if (!categorias) return null;
+    const enOrden = ESTADOS.map((e) => categorias[e.cve]).filter((c): c is string => c != null);
+    return escalaCategorica(enOrden, paletaCategorica);
+  }, [categorias, paletaCategorica]);
 
   const { paths, min, max } = useMemo(() => {
     const fc = feature(
@@ -92,10 +112,14 @@ export function MapaMexico({
   }, [data]);
 
   function fillFor(cve: string): string {
+    if (colorPorCategoria) {
+      const cat = categorias?.[cve];
+      return (cat != null ? colorPorCategoria.get(cat) : undefined) ?? emptyColor;
+    }
     const v = data?.[cve];
     if (v == null || !Number.isFinite(v)) return emptyColor;
     const t = max > min ? (v - min) / (max - min) : 1;
-    return lerpHex(colorRange[0], colorRange[1], t);
+    return interpolaPaleta(cols, t);
   }
 
   return (
@@ -113,7 +137,9 @@ export function MapaMexico({
         const etiqueta =
           v != null && Number.isFinite(v)
             ? `${e?.nombreCorto}: ${formatValue ? formatValue(v, e!) : v}`
-            : (e?.nombreCorto ?? cve);
+            : categorias?.[cve] != null
+              ? `${e?.nombreCorto}: ${categorias[cve]}`
+              : (e?.nombreCorto ?? cve);
         return (
           <path
             key={cve}
@@ -134,3 +160,6 @@ export function MapaMexico({
     </svg>
   );
 }
+
+export { Leyenda } from "./leyenda";
+export type { LeyendaProps } from "./leyenda";

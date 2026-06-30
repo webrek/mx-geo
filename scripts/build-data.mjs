@@ -348,6 +348,94 @@ const CATALOGO = [
   },
 ];
 
+/**
+ * Datos por estado (CVE_ENT) que enriquecen el catálogo:
+ *  - `region`: clave de la regionalización de Banxico (ver src/regiones.ts).
+ *  - `poblacion`: población total del Censo de Población y Vivienda 2020 (INEGI).
+ *  - `superficie`: superficie en km² (INEGI, valores de referencia).
+ *  - `huso`: zona horaria IANA principal del estado (México sin DST desde 2022,
+ *    salvo municipios fronterizos del norte).
+ */
+const DATOS = {
+  "01": {
+    region: "centro-norte",
+    poblacion: 1425607,
+    superficie: 5618,
+    huso: "America/Mexico_City",
+  },
+  "02": { region: "norte", poblacion: 3769020, superficie: 71450, huso: "America/Tijuana" },
+  "03": { region: "norte", poblacion: 798447, superficie: 73909, huso: "America/Mazatlan" },
+  "04": { region: "sur", poblacion: 928363, superficie: 57484, huso: "America/Merida" },
+  "05": { region: "norte", poblacion: 3146771, superficie: 151563, huso: "America/Monterrey" },
+  "06": {
+    region: "centro-norte",
+    poblacion: 731391,
+    superficie: 5627,
+    huso: "America/Mexico_City",
+  },
+  "07": { region: "sur", poblacion: 5543828, superficie: 73311, huso: "America/Mexico_City" },
+  "08": { region: "norte", poblacion: 3741869, superficie: 247460, huso: "America/Chihuahua" },
+  "09": { region: "centro", poblacion: 9209944, superficie: 1495, huso: "America/Mexico_City" },
+  10: {
+    region: "centro-norte",
+    poblacion: 1832650,
+    superficie: 123367,
+    huso: "America/Mexico_City",
+  },
+  11: {
+    region: "centro-norte",
+    poblacion: 6166934,
+    superficie: 30608,
+    huso: "America/Mexico_City",
+  },
+  12: { region: "sur", poblacion: 3540685, superficie: 63596, huso: "America/Mexico_City" },
+  13: { region: "centro", poblacion: 3082841, superficie: 20856, huso: "America/Mexico_City" },
+  14: {
+    region: "centro-norte",
+    poblacion: 8348151,
+    superficie: 78588,
+    huso: "America/Mexico_City",
+  },
+  15: { region: "centro", poblacion: 16992418, superficie: 22357, huso: "America/Mexico_City" },
+  16: {
+    region: "centro-norte",
+    poblacion: 4748846,
+    superficie: 58599,
+    huso: "America/Mexico_City",
+  },
+  17: { region: "centro", poblacion: 1971520, superficie: 4879, huso: "America/Mexico_City" },
+  18: { region: "centro-norte", poblacion: 1235456, superficie: 27857, huso: "America/Mazatlan" },
+  19: { region: "norte", poblacion: 5784442, superficie: 64156, huso: "America/Monterrey" },
+  20: { region: "sur", poblacion: 4132148, superficie: 93757, huso: "America/Mexico_City" },
+  21: { region: "centro", poblacion: 6583278, superficie: 34290, huso: "America/Mexico_City" },
+  22: {
+    region: "centro-norte",
+    poblacion: 2368467,
+    superficie: 11699,
+    huso: "America/Mexico_City",
+  },
+  23: { region: "sur", poblacion: 1857985, superficie: 42361, huso: "America/Cancun" },
+  24: {
+    region: "centro-norte",
+    poblacion: 2822255,
+    superficie: 60983,
+    huso: "America/Mexico_City",
+  },
+  25: { region: "norte", poblacion: 3026943, superficie: 57377, huso: "America/Mazatlan" },
+  26: { region: "norte", poblacion: 2944840, superficie: 179503, huso: "America/Hermosillo" },
+  27: { region: "sur", poblacion: 2402598, superficie: 24731, huso: "America/Mexico_City" },
+  28: { region: "norte", poblacion: 3527735, superficie: 80175, huso: "America/Monterrey" },
+  29: { region: "centro", poblacion: 1342977, superficie: 3997, huso: "America/Mexico_City" },
+  30: { region: "sur", poblacion: 8062579, superficie: 71826, huso: "America/Mexico_City" },
+  31: { region: "sur", poblacion: 2320898, superficie: 39524, huso: "America/Merida" },
+  32: {
+    region: "centro-norte",
+    poblacion: 1622138,
+    superficie: 75275,
+    huso: "America/Mexico_City",
+  },
+};
+
 async function exists(p) {
   try {
     await access(p);
@@ -391,10 +479,18 @@ async function main() {
   console.log(`escrito ${cleanPath} (${features.length} estados)`);
 
   // Catálogo TS (fuente única de verdad para la librería)
-  const rows = CATALOGO.map(
-    (e) =>
-      `  { cve: ${JSON.stringify(e.cve)}, nombre: ${JSON.stringify(e.nombre)}, nombreCorto: ${JSON.stringify(e.corto)}, abreviatura: ${JSON.stringify(e.abr)}, iso: ${JSON.stringify(e.iso)}, capital: ${JSON.stringify(e.capital)}, alias: ${JSON.stringify(e.alias)} },`,
-  ).join("\n");
+  const rows = CATALOGO.map((e) => {
+    const d = DATOS[e.cve];
+    if (!d) throw new Error(`falta DATOS para la clave ${e.cve}`);
+    return (
+      `  { cve: ${JSON.stringify(e.cve)}, nombre: ${JSON.stringify(e.nombre)}, ` +
+      `nombreCorto: ${JSON.stringify(e.corto)}, abreviatura: ${JSON.stringify(e.abr)}, ` +
+      `iso: ${JSON.stringify(e.iso)}, capital: ${JSON.stringify(e.capital)}, ` +
+      `region: ${JSON.stringify(d.region)}, poblacion: ${d.poblacion}, ` +
+      `superficie: ${d.superficie}, huso: ${JSON.stringify(d.huso)}, ` +
+      `alias: ${JSON.stringify(e.alias)} },`
+    );
+  }).join("\n");
 
   const ts = `// GENERADO por scripts/build-data.mjs — no editar a mano.
 import type { Estado } from "./types";

@@ -5,6 +5,7 @@ import { geoMercator, geoPath } from "d3-geo";
 import { feature } from "topojson-client";
 import type { Feature, Geometry, FeatureCollection } from "geojson";
 import indexData from "../data/municipios-index.json";
+import { interpolaPaleta, resuelvePaleta, type Paleta, type PaletaInput } from "./colores";
 
 /** Un municipio (o alcaldía) con sus claves de INEGI. */
 export interface Municipio {
@@ -97,6 +98,12 @@ type Props = {
   /** Valores por CVEGEO, p. ej. `{ "09012": 1200 }`. */
   data?: Record<string, number>;
   onSelect?: (municipio: Municipio) => void;
+  /**
+   * Paleta del choropleth: nombre integrado (`"verde"`, `"azul"`…) o lista de
+   * colores hex. Por defecto `"verde"`.
+   */
+  paleta?: PaletaInput;
+  /** Rango `[mínimo, máximo]` de dos colores; `paleta` tiene prioridad. */
   colorRange?: [string, string];
   emptyColor?: string;
   stroke?: string;
@@ -108,21 +115,6 @@ type Props = {
 const WIDTH = 800;
 const HEIGHT = 600;
 
-function lerpHex(a: string, b: string, t: number): string {
-  const rgb = (h: string): [number, number, number] => [
-    parseInt(h.slice(1, 3), 16),
-    parseInt(h.slice(3, 5), 16),
-    parseInt(h.slice(5, 7), 16),
-  ];
-  const [ar, ag, ab] = rgb(a);
-  const [br, bg, bb] = rgb(b);
-  const mix = (x: number, y: number) =>
-    Math.round(x + (y - x) * t)
-      .toString(16)
-      .padStart(2, "0");
-  return `#${mix(ar, br)}${mix(ag, bg)}${mix(ab, bb)}`;
-}
-
 /**
  * Mapa choropleth de los municipios de un estado. Carga la geometría del estado
  * bajo demanda (un chunk por estado, alta resolución de INEGI). SVG puro, sin
@@ -132,7 +124,8 @@ export function MapaMunicipios({
   estado,
   data,
   onSelect,
-  colorRange = ["#dcfce7", "#166534"],
+  paleta,
+  colorRange,
   emptyColor = "#e5e7eb",
   stroke = "#ffffff",
   formatValue,
@@ -142,6 +135,10 @@ export function MapaMunicipios({
   const titleId = useId();
   const [hover, setHover] = useState<string | null>(null);
   const [topo, setTopo] = useState<MunicipiosEstadoTopo | null>(null);
+  const cols = useMemo<Paleta>(
+    () => resuelvePaleta(paleta ?? "verde", colorRange),
+    [paleta, colorRange],
+  );
 
   useEffect(() => {
     let vivo = true;
@@ -186,7 +183,7 @@ export function MapaMunicipios({
     const v = data?.[cvegeo];
     if (v == null || !Number.isFinite(v)) return emptyColor;
     const t = max > min ? (v - min) / (max - min) : 1;
-    return lerpHex(colorRange[0], colorRange[1], t);
+    return interpolaPaleta(cols, t);
   }
 
   return (
