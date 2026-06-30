@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="es-MX">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>@webrek/mx-geo — demo</title>
+<style>
+  :root { --ink:#1f2330; --muted:#6b7280; --line:#e5e7eb; --brand:#1e3a8a; --accent:#e0a24a; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color:var(--ink); background:#f6f7f9; }
+  .wrap { max-width: 920px; margin: 0 auto; padding: 28px 20px 48px; }
+  header h1 { margin:0; font-size: 26px; letter-spacing:-.01em; }
+  header p { margin:4px 0 0; color:var(--muted); font-size:14px; }
+  .bar { display:flex; gap:8px; margin:20px 0 14px; flex-wrap:wrap; }
+  .bar button { font:inherit; font-size:13px; padding:7px 13px; border-radius:9px; border:1px solid #d8dce4; background:#fff; color:var(--ink); cursor:pointer; transition:.15s; }
+  .bar button:hover { border-color:var(--brand); }
+  .bar button.on { background:var(--brand); border-color:var(--brand); color:#fff; }
+  .stage { display:grid; grid-template-columns: 1fr 230px; gap:16px; align-items:start; }
+  .map { background:#fff; border:1px solid var(--line); border-radius:14px; padding:8px; }
+  .panel { background:#fff; border:1px solid var(--line); border-radius:14px; padding:16px; min-height:170px; }
+  .panel .hint { color:#9ca3af; font-size:13px; }
+  .panel h3 { margin:0 0 2px; font-size:18px; }
+  .panel .cve { display:inline-block; font:600 11px ui-monospace, monospace; background:var(--brand); color:#fff; border-radius:6px; padding:2px 8px; margin-bottom:8px; }
+  .panel dl { margin:0; font-size:13px; }
+  .panel dt { color:var(--muted); margin-top:8px; }
+  .panel dd { margin:0; font-weight:600; }
+  .panel .big { font-size:24px; color:var(--brand); }
+  svg path { transition: fill .25s; }
+  footer { margin-top:18px; color:#9ca3af; font-size:12px; }
+  code { font-family: ui-monospace, monospace; font-size:.92em; }
+  @media (max-width:560px){ .stage { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+  <div id="app"></div>
+  <script type="module" src="./demo.js"></script>
+</body>
+</html>
