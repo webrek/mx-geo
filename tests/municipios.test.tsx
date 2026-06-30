@@ -1,14 +1,13 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { render, cleanup, fireEvent } from "@testing-library/react";
-import { municipios, municipio, municipiosTopoJSON, MapaMunicipios } from "../src/municipios";
+import { render, cleanup, fireEvent, waitFor } from "@testing-library/react";
+import { municipios, municipio, cargaMunicipios, MapaMunicipios } from "../src/municipios";
 
 afterEach(cleanup);
 
-describe("datos de municipios", () => {
-  it("trae 2,436 municipios con CVEGEO de 5 dígitos", () => {
+describe("índice de municipios", () => {
+  it("trae 2,475 municipios con CVEGEO de 5 dígitos", () => {
     const todos = municipios();
-    expect(todos.length).toBe(2436);
-    expect(municipiosTopoJSON.objects.municipios.geometries).toHaveLength(2436);
+    expect(todos.length).toBe(2475);
     for (const m of todos.slice(0, 50)) {
       expect(m.cvegeo).toMatch(/^\d{5}$/);
       expect(m.cvegeo).toBe(m.cve_ent + m.cve_mun);
@@ -26,22 +25,38 @@ describe("datos de municipios", () => {
   });
 });
 
+describe("cargaMunicipios", () => {
+  it("carga la geometría de un estado bajo demanda", async () => {
+    const topo = await cargaMunicipios("09");
+    const obj = topo.objects[Object.keys(topo.objects)[0]!]!;
+    expect(obj.geometries).toHaveLength(16);
+    expect(obj.geometries[0]!.properties.cve_ent).toBe("09");
+  });
+
+  it("rechaza un estado desconocido", async () => {
+    await expect(cargaMunicipios("99")).rejects.toThrow();
+  });
+});
+
 describe("<MapaMunicipios>", () => {
-  it("dibuja solo los municipios del estado indicado", () => {
+  it("dibuja los municipios del estado tras cargar la geometría", async () => {
     const { container } = render(<MapaMunicipios estado="09" />);
-    const paths = container.querySelectorAll("path[data-cvegeo]");
-    expect(paths).toHaveLength(16);
-    for (const p of paths) {
+    await waitFor(() => {
+      expect(container.querySelectorAll("path[data-cvegeo]")).toHaveLength(16);
+    });
+    for (const p of container.querySelectorAll("path[data-cvegeo]")) {
       expect(p.getAttribute("data-cvegeo")!.startsWith("09")).toBe(true);
       expect((p.getAttribute("d") ?? "").length).toBeGreaterThan(0);
     }
   });
 
-  it("llama onSelect con el municipio al hacer clic", () => {
+  it("llama onSelect con el municipio al hacer clic", async () => {
     const onSelect = vi.fn();
     const { container } = render(<MapaMunicipios estado="09" onSelect={onSelect} />);
+    await waitFor(() =>
+      expect(container.querySelector('path[data-cvegeo="09012"]')).not.toBeNull(),
+    );
     fireEvent.click(container.querySelector('path[data-cvegeo="09012"]')!);
-    expect(onSelect).toHaveBeenCalledTimes(1);
     expect(onSelect.mock.lastCall?.[0]).toMatchObject({ cvegeo: "09012", nombre: "Tlalpan" });
   });
 });

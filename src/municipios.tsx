@@ -1,10 +1,10 @@
 "use client";
 
-import { useId, useMemo, useState } from "react";
+import { useEffect, useId, useMemo, useState } from "react";
 import { geoMercator, geoPath } from "d3-geo";
 import { feature } from "topojson-client";
 import type { Feature, Geometry, FeatureCollection } from "geojson";
-import municipiosTopo from "../data/municipios.topo.json";
+import indexData from "../data/municipios-index.json";
 
 /** Un municipio (o alcaldía) con sus claves de INEGI. */
 export interface Municipio {
@@ -18,23 +18,20 @@ export interface Municipio {
   nombre: string;
 }
 
-interface MunicipiosTopo {
+/** TopoJSON de los municipios de un estado (un objeto). */
+export interface MunicipiosEstadoTopo {
   type: "Topology";
-  objects: {
-    municipios: { type: "GeometryCollection"; geometries: Array<{ properties: Municipio }> };
-  };
+  objects: Record<
+    string,
+    { type: "GeometryCollection"; geometries: Array<{ properties: Municipio }> }
+  >;
   arcs: number[][][];
   transform?: { scale: [number, number]; translate: [number, number] };
 }
 
-/** TopoJSON de los 2,436 municipios, llaveado por `cvegeo`. Derivado de INEGI. */
-export const municipiosTopoJSON = municipiosTopo as unknown as MunicipiosTopo;
+const TODOS: readonly Municipio[] = indexData as Municipio[];
 
-const TODOS: readonly Municipio[] = municipiosTopoJSON.objects.municipios.geometries.map(
-  (g) => g.properties,
-);
-
-/** Lista de municipios; si pasas una clave de estado (CVE_ENT) la filtra. */
+/** Lista de municipios (índice ligero, sin geometría); filtra por CVE_ENT. */
 export function municipios(cveEnt?: string): Municipio[] {
   return cveEnt ? TODOS.filter((m) => m.cve_ent === cveEnt) : TODOS.slice();
 }
@@ -42,6 +39,56 @@ export function municipios(cveEnt?: string): Municipio[] {
 /** Devuelve un municipio por su CVEGEO, o `null`. */
 export function municipio(cvegeo: string): Municipio | null {
   return TODOS.find((m) => m.cvegeo === cvegeo) ?? null;
+}
+
+// Cada estado carga su geometría bajo demanda (un chunk por estado).
+const CARGADORES: Record<string, () => Promise<{ default: unknown }>> = {
+  "01": () => import("../data/municipios/01.json"),
+  "02": () => import("../data/municipios/02.json"),
+  "03": () => import("../data/municipios/03.json"),
+  "04": () => import("../data/municipios/04.json"),
+  "05": () => import("../data/municipios/05.json"),
+  "06": () => import("../data/municipios/06.json"),
+  "07": () => import("../data/municipios/07.json"),
+  "08": () => import("../data/municipios/08.json"),
+  "09": () => import("../data/municipios/09.json"),
+  "10": () => import("../data/municipios/10.json"),
+  "11": () => import("../data/municipios/11.json"),
+  "12": () => import("../data/municipios/12.json"),
+  "13": () => import("../data/municipios/13.json"),
+  "14": () => import("../data/municipios/14.json"),
+  "15": () => import("../data/municipios/15.json"),
+  "16": () => import("../data/municipios/16.json"),
+  "17": () => import("../data/municipios/17.json"),
+  "18": () => import("../data/municipios/18.json"),
+  "19": () => import("../data/municipios/19.json"),
+  "20": () => import("../data/municipios/20.json"),
+  "21": () => import("../data/municipios/21.json"),
+  "22": () => import("../data/municipios/22.json"),
+  "23": () => import("../data/municipios/23.json"),
+  "24": () => import("../data/municipios/24.json"),
+  "25": () => import("../data/municipios/25.json"),
+  "26": () => import("../data/municipios/26.json"),
+  "27": () => import("../data/municipios/27.json"),
+  "28": () => import("../data/municipios/28.json"),
+  "29": () => import("../data/municipios/29.json"),
+  "30": () => import("../data/municipios/30.json"),
+  "31": () => import("../data/municipios/31.json"),
+  "32": () => import("../data/municipios/32.json"),
+};
+
+const CACHE = new Map<string, MunicipiosEstadoTopo>();
+
+/** Carga (con caché) el TopoJSON de los municipios de un estado por su CVE_ENT. */
+export async function cargaMunicipios(cveEnt: string): Promise<MunicipiosEstadoTopo> {
+  const hit = CACHE.get(cveEnt);
+  if (hit) return hit;
+  const loader = CARGADORES[cveEnt];
+  if (!loader) throw new Error(`estado desconocido: ${cveEnt}`);
+  const mod = await loader();
+  const topo = ((mod as { default?: unknown }).default ?? mod) as MunicipiosEstadoTopo;
+  CACHE.set(cveEnt, topo);
+  return topo;
 }
 
 type Props = {
@@ -77,9 +124,9 @@ function lerpHex(a: string, b: string, t: number): string {
 }
 
 /**
- * Mapa choropleth de los municipios de un estado. Misma idea que `<MapaMexico>`
- * pero a nivel municipal: filtra por `estado` (CVE_ENT) y ajusta el encuadre a
- * ese estado. SVG puro, sin librería de mapas ni API key.
+ * Mapa choropleth de los municipios de un estado. Carga la geometría del estado
+ * bajo demanda (un chunk por estado, alta resolución de INEGI). SVG puro, sin
+ * librería de mapas ni API key.
  */
 export function MapaMunicipios({
   estado,
@@ -94,21 +141,33 @@ export function MapaMunicipios({
 }: Props) {
   const titleId = useId();
   const [hover, setHover] = useState<string | null>(null);
+  const [topo, setTopo] = useState<MunicipiosEstadoTopo | null>(null);
+
+  useEffect(() => {
+    let vivo = true;
+    setTopo(null);
+    cargaMunicipios(estado).then((t) => {
+      if (vivo) setTopo(t);
+    });
+    return () => {
+      vivo = false;
+    };
+  }, [estado]);
 
   const { paths, min, max } = useMemo(() => {
-    const full = feature(
-      municipiosTopoJSON as never,
-      (municipiosTopoJSON as never as { objects: { municipios: unknown } }).objects
-        .municipios as never,
+    if (!topo) return { paths: [] as Array<{ m: Municipio; d: string }>, min: 0, max: 0 };
+    const objName = Object.keys(topo.objects)[0]!;
+    const fc = feature(
+      topo as never,
+      topo.objects[objName] as never,
     ) as unknown as FeatureCollection<Geometry, Municipio>;
 
-    const feats = full.features.filter((f) => f.properties.cve_ent === estado);
     const projection = geoMercator().fitExtent(
       [
         [12, 12],
         [WIDTH - 12, HEIGHT - 12],
       ],
-      { type: "FeatureCollection", features: feats } as never,
+      fc as never,
     );
     const path = geoPath(projection);
 
@@ -116,12 +175,12 @@ export function MapaMunicipios({
     const min = vals.length ? Math.min(...vals) : 0;
     const max = vals.length ? Math.max(...vals) : 0;
 
-    const paths = feats.map((f: Feature<Geometry, Municipio>) => ({
+    const paths = fc.features.map((f: Feature<Geometry, Municipio>) => ({
       m: f.properties,
       d: path(f) ?? "",
     }));
     return { paths, min, max };
-  }, [estado, data]);
+  }, [topo, data]);
 
   function fillFor(cvegeo: string): string {
     const v = data?.[cvegeo];

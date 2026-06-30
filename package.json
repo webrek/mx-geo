@@ -1,6 +1,6 @@
 {
   "name": "@webrek/mx-geo",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Mapa de México por estados (división política con claves INEGI) para dashboards: TopoJSON + catálogo tipado + componente React choropleth, sin API keys.",
   "keywords": [
     "mexico",
@@ -26,8 +26,7 @@
     ]
   },
   "files": [
-    "dist",
-    "data"
+    "dist"
   ],
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -45,15 +44,12 @@
     },
     "./municipios": {
       "types": "./dist/municipios.d.ts",
-      "import": "./dist/municipios.js",
-      "require": "./dist/municipios.cjs"
-    },
-    "./data/estados.topo.json": "./data/estados.topo.json",
-    "./data/municipios.topo.json": "./data/municipios.topo.json"
+      "import": "./dist/municipios.js"
+    }
   },
   "scripts": {
     "build:data": "node scripts/build-data.mjs && mapshaper scripts/estados.geojson -simplify 6% keep-shapes -clean -o format=topojson data/estados.topo.json",
-    "build:data:municipios": "node scripts/build-municipios.mjs && mapshaper scripts/municipios.geojson -simplify 8% keep-shapes -clean -o format=topojson data/municipios.topo.json",
+    "build:data:municipios": "NODE_OPTIONS=--max-old-space-size=8192 node scripts/build-municipios.mjs",
     "build": "tsup",
     "build:demo": "node scripts/build-demo.mjs",
     "typecheck": "tsc --noEmit",

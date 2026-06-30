@@ -93,24 +93,27 @@ import { estadosTopoJSON } from "@webrek/mx-geo";
 
 ## Municipios (drill-down)
 
-El subpath `@webrek/mx-geo/municipios` trae los **2,436 municipios** llaveados por
-`CVEGEO` (CVE_ENT + CVE_MUN) y un componente para dibujarlos por estado. Vive
-aparte: quien solo usa estados no carga su peso (~556 KB).
+El subpath `@webrek/mx-geo/municipios` (solo ESM) trae los **2,475 municipios** en
+alta resolución (Marco Geoestadístico de INEGI), llaveados por `CVEGEO`. La
+geometría se **carga por estado bajo demanda** (un chunk por estado): solo bajas
+el estado que abres.
 
 ```tsx
 "use client";
 import { MapaMunicipios, municipios, municipio } from "@webrek/mx-geo/municipios";
 
-municipios("09").length; // 16 (alcaldías de la CDMX)
+municipios("09").length; // 16 alcaldías de la CDMX (índice ligero, sin geometría)
 municipio("09012")?.nombre; // "Tlalpan"
 
-// choropleth de los municipios de un estado (CVE_ENT)
+// choropleth de los municipios de un estado (CVE_ENT); carga su geometría sola
 <MapaMunicipios
   estado="20"
   data={{ "20067": 1200 }}
   onSelect={(m) => console.log(m.cvegeo, m.nombre)}
 />;
 ```
+
+¿Necesitas el TopoJSON crudo de un estado? `await cargaMunicipios("20")`.
 
 Para un **drill-down** completo: en el `onSelect` de `<MapaMexico>` guardas el
 estado y renderizas `<MapaMunicipios estado={cve} />` (ver `examples/demo.tsx`).
@@ -120,10 +123,8 @@ estado y renderizas `<MapaMunicipios estado={cve} />` (ver `examples/demo.tsx`).
 - **Geometría:** [Natural Earth](https://www.naturalearthdata.com/) (admin-1, 1:10m),
   de **dominio público**, simplificada para web.
 - **Claves y nombres:** `CVE_ENT` y nomenclatura oficial de **INEGI**.
-- **Municipios:** geometría de **diegovalle/mxmaps** (derivada de INEGI, MIT),
-  simplificada. Son **2,436** municipios (vintage del dataset); hoy INEGI registra
-  ~2,477 (algunos se crearon después). Sirve para visualización; para exactitud al
-  día se regenera desde el Marco Geoestadístico vigente.
+- **Municipios:** **Marco Geoestadístico de INEGI** (servicio ArcGIS), **2,475**
+  municipios en alta resolución, simplificados para web y partidos por estado.
 - **Vigencia:** la geometría es de referencia/visualización, no catastral. CDMX usa el
   ISO vigente `MX-CMX` (Natural Earth todavía la etiqueta como `DIF` internamente; aquí
   ya queda normalizada).

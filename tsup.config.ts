@@ -1,12 +1,29 @@
 import { defineConfig } from "tsup";
 
-export default defineConfig({
-  entry: ["src/index.ts", "src/react.tsx", "src/municipios.tsx"],
-  format: ["esm", "cjs"],
-  dts: true,
-  clean: true,
-  treeshake: true,
-  sourcemap: true,
-  // dependencias y peers quedan fuera del bundle; el TopoJSON sí se incrusta.
-  external: ["react", "react-dom", "d3-geo", "topojson-client"],
-});
+const external = ["react", "react-dom", "d3-geo", "topojson-client"];
+
+export default defineConfig([
+  // Núcleo + estados: ligeros, ESM + CJS.
+  {
+    entry: ["src/index.ts", "src/react.tsx"],
+    format: ["esm", "cjs"],
+    dts: true,
+    clean: true,
+    treeshake: true,
+    sourcemap: false,
+    external,
+  },
+  // Municipios: ESM-only con code-splitting (un chunk por estado, carga
+  // bajo demanda). En CJS los 32 estados se inlinearían en un solo archivo
+  // de varios MB, así que este entry es solo ESM.
+  {
+    entry: ["src/municipios.tsx"],
+    format: ["esm"],
+    dts: true,
+    clean: false,
+    treeshake: true,
+    splitting: true,
+    sourcemap: false,
+    external,
+  },
+]);
