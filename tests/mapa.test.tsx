@@ -23,6 +23,13 @@ describe("<MapaMexico>", () => {
     expect(otro.getAttribute("fill")).toBe("#eeeeee");
   });
 
+  it("con data vacía pinta todo de emptyColor sin truenos", () => {
+    const { container } = render(<MapaMexico data={{}} emptyColor="#eeeeee" />);
+    const paths = container.querySelectorAll("path[data-cve]");
+    expect(paths).toHaveLength(32);
+    for (const p of paths) expect(p.getAttribute("fill")).toBe("#eeeeee");
+  });
+
   it("llama onSelect con el estado al hacer clic", () => {
     const onSelect = vi.fn();
     const { container } = render(<MapaMexico onSelect={onSelect} />);

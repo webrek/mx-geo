@@ -76,6 +76,36 @@ describe("escalaCuantil", () => {
     const { tramos } = escalaCuantil([], "verde", 5);
     expect(tramos).toEqual([]);
   });
+  it("con más grupos que valores distintos da n tramos sin colores NaN", () => {
+    const { color, tramos } = escalaCuantil([5, 10], "azul", 5);
+    expect(tramos).toHaveLength(5);
+    for (const t of tramos) expect(t.color).toMatch(/^#[0-9a-f]{6}$/);
+    expect(color(5)).toMatch(/^#[0-9a-f]{6}$/);
+  });
+  it("con todos los valores iguales no produce NaN ni truena", () => {
+    const { color, tramos } = escalaCuantil([7, 7, 7, 7], "verde", 4);
+    expect(tramos).toHaveLength(4);
+    expect(color(7)).toMatch(/^#[0-9a-f]{6}$/);
+    expect(tramos.every((t) => t.color.includes("NaN") === false)).toBe(true);
+  });
+  it("ignora valores no finitos al construir la escala", () => {
+    const { tramos } = escalaCuantil([1, NaN, 3, Infinity, 5], "rojo", 2);
+    expect(tramos[0]!.desde).toBe(1);
+    expect(tramos[tramos.length - 1]!.hasta).toBe(5);
+  });
+});
+
+describe("interpolaPaleta / escalaCategorica — bordes", () => {
+  it("interpolaPaleta con un solo color devuelve ese color", () => {
+    expect(interpolaPaleta(["#123456"], 0.7)).toBe("#123456");
+  });
+  it("escalaCategorica recicla la paleta si hay más categorías que colores", () => {
+    const cats = Array.from({ length: PALETA_CATEGORICA.length + 2 }, (_, i) => `c${i}`);
+    const m = escalaCategorica(cats);
+    expect(m.size).toBe(cats.length);
+    // la categoría n+0 y la n+length comparten color (módulo)
+    expect(m.get("c0")).toBe(m.get(`c${PALETA_CATEGORICA.length}`));
+  });
 });
 
 describe("escalaCategorica", () => {
