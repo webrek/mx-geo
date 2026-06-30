@@ -91,14 +91,39 @@ import { estadosTopoJSON } from "@webrek/mx-geo";
 // estadosTopoJSON.objects.estados.geometries[i].properties = { cve, nombre, abr }
 ```
 
+## Municipios (drill-down)
+
+El subpath `@webrek/mx-geo/municipios` trae los **2,436 municipios** llaveados por
+`CVEGEO` (CVE_ENT + CVE_MUN) y un componente para dibujarlos por estado. Vive
+aparte: quien solo usa estados no carga su peso (~556 KB).
+
+```tsx
+"use client";
+import { MapaMunicipios, municipios, municipio } from "@webrek/mx-geo/municipios";
+
+municipios("09").length; // 16 (alcaldías de la CDMX)
+municipio("09012")?.nombre; // "Tlalpan"
+
+// choropleth de los municipios de un estado (CVE_ENT)
+<MapaMunicipios
+  estado="20"
+  data={{ "20067": 1200 }}
+  onSelect={(m) => console.log(m.cvegeo, m.nombre)}
+/>;
+```
+
+Para un **drill-down** completo: en el `onSelect` de `<MapaMexico>` guardas el
+estado y renderizas `<MapaMunicipios estado={cve} />` (ver `examples/demo.tsx`).
+
 ## Datos, fuentes y precisión
 
 - **Geometría:** [Natural Earth](https://www.naturalearthdata.com/) (admin-1, 1:10m),
   de **dominio público**, simplificada para web.
 - **Claves y nombres:** `CVE_ENT` y nomenclatura oficial de **INEGI**.
-- **Alcance:** solo **estados** (división política de 1er nivel). Los **municipios**
-  llegan en una versión futura (`level="municipios"` + drill-down), a partir del
-  Marco Geoestadístico de INEGI.
+- **Municipios:** geometría de **diegovalle/mxmaps** (derivada de INEGI, MIT),
+  simplificada. Son **2,436** municipios (vintage del dataset); hoy INEGI registra
+  ~2,477 (algunos se crearon después). Sirve para visualización; para exactitud al
+  día se regenera desde el Marco Geoestadístico vigente.
 - **Vigencia:** la geometría es de referencia/visualización, no catastral. CDMX usa el
   ISO vigente `MX-CMX` (Natural Earth todavía la etiqueta como `DIF` internamente; aquí
   ya queda normalizada).

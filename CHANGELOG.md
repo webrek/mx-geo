@@ -4,6 +4,17 @@ Todas las versiones notables de este paquete se documentan aquí.
 El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/)
 y el versionado es [SemVer](https://semver.org/lang/es/).
 
+## [0.2.0]
+
+### Agregado
+
+- Subpath `@webrek/mx-geo/municipios`: TopoJSON de los **2,436 municipios**
+  (derivado de INEGI vía diegovalle/mxmaps) llaveado por `CVEGEO`, helpers
+  `municipios(cveEnt?)` y `municipio(cvegeo)`, y componente `<MapaMunicipios>`
+  para choropleth a nivel municipal por estado (drill-down).
+- El dato municipal (~556 KB) vive en su propio entry, así que quien solo use
+  estados no carga ese peso.
+
 ## [0.1.0]
 
 ### Agregado
