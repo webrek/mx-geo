@@ -1,6 +1,5 @@
 "use client";
 
-import { useMemo } from "react";
 import { interpolaPaleta, resuelvePaleta, type PaletaInput, type TramoCuantil } from "./colores";
 
 /** Cómo se aceptan las categorías en la leyenda: pares `[etiqueta, color]`. */
@@ -63,7 +62,7 @@ export function Leyenda(props: LeyendaProps) {
   const { titulo, className } = props;
   const tipo = props.tipo ?? "gradiente";
 
-  const cuerpo = useMemo(() => {
+  const cuerpo = (() => {
     if (tipo === "categorias") {
       const items = entradas((props as Extract<LeyendaProps, { tipo: "categorias" }>).categorias);
       return (
@@ -118,7 +117,7 @@ export function Leyenda(props: LeyendaProps) {
         </div>
       </div>
     );
-  }, [tipo, props]);
+  })();
 
   return (
     <div className={className} style={{ fontSize: "0.9em", lineHeight: 1.3 }}>

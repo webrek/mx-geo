@@ -28,6 +28,17 @@ y el versionado es [SemVer](https://semver.org/lang/es/).
 - **Helper `agregaMunicipiosAEstado`**: sube datos a nivel municipio (CVEGEO) a
   nivel estado (CVE_ENT) para pintar `<MapaMexico>` con cifras municipales.
 
+- **`coloresCategorias(categorias, paleta?)`**: mapa `categoría -> color`
+  determinista (orden alfabético) — es el mismo que usa `<MapaMexico>` por
+  dentro, así la `<Leyenda tipo="categorias">` siempre concuerda con el mapa.
+
+### Robustez
+
+- `interpolaPaleta` lanza un error claro con una paleta vacía (antes daba un
+  crash con `undefined`).
+- `lerpHex` acepta hex corto (`#rgb`) y **lanza** ante un color inválido
+  (nombre CSS, longitud incorrecta) en vez de pintar un color con `NaN`.
+
 ### Compatibilidad
 
 - `colorRange` sigue funcionando en ambos mapas; si pasas `paleta`, esta tiene

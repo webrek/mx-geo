@@ -6,7 +6,7 @@
  * estados que no estén en el objeto quedan en `emptyColor`.
  */
 import { MapaMexico, Leyenda } from "@webrek/mx-geo/react";
-import { escalaCategorica } from "@webrek/mx-geo";
+import { coloresCategorias } from "@webrek/mx-geo";
 
 const ZONAS: Record<string, string> = {
   // Noroeste
@@ -25,8 +25,8 @@ const ZONAS: Record<string, string> = {
   "13": "Metro",
 };
 
-// Colores estables por zona, en el orden en que aparecen.
-const colores = escalaCategorica(Object.values(ZONAS));
+// Mismos colores que pinta el mapa (helper determinista), para la leyenda.
+const colores = coloresCategorias(ZONAS);
 const leyenda = [...colores.entries()] as [string, string][];
 
 export function MapaPorZona() {

@@ -86,15 +86,20 @@ export function resuelvePaleta(
   return PALETAS.azul;
 }
 
-/** Interpola dos colores hex (`#rrggbb`) en el punto `t` ∈ [0, 1]. */
+/** Convierte `#rgb` o `#rrggbb` a sus tres canales; lanza si no es hex válido. */
+function aRgb(hex: string): [number, number, number] {
+  let s = hex.trim().replace(/^#/, "");
+  if (s.length === 3) s = s.replace(/./g, (c) => c + c); // #abc -> #aabbcc
+  if (!/^[0-9a-fA-F]{6}$/.test(s)) {
+    throw new Error(`color hex inválido: ${hex} (se espera "#rgb" o "#rrggbb")`);
+  }
+  return [parseInt(s.slice(0, 2), 16), parseInt(s.slice(2, 4), 16), parseInt(s.slice(4, 6), 16)];
+}
+
+/** Interpola dos colores hex (`#rgb` o `#rrggbb`) en el punto `t` ∈ [0, 1]. */
 export function lerpHex(a: string, b: string, t: number): string {
-  const rgb = (h: string): [number, number, number] => [
-    parseInt(h.slice(1, 3), 16),
-    parseInt(h.slice(3, 5), 16),
-    parseInt(h.slice(5, 7), 16),
-  ];
-  const [ar, ag, ab] = rgb(a);
-  const [br, bg, bb] = rgb(b);
+  const [ar, ag, ab] = aRgb(a);
+  const [br, bg, bb] = aRgb(b);
   const mix = (x: number, y: number) =>
     Math.round(x + (y - x) * Math.max(0, Math.min(1, t)))
       .toString(16)
@@ -107,6 +112,7 @@ export function lerpHex(a: string, b: string, t: number): string {
  * colores en tramos iguales e interpola dentro del tramo que toca.
  */
 export function interpolaPaleta(paleta: Paleta, t: number): string {
+  if (paleta.length === 0) throw new Error("la paleta no puede estar vacía");
   if (paleta.length === 1) return paleta[0]!;
   const x = Math.max(0, Math.min(1, t)) * (paleta.length - 1);
   const i = Math.min(Math.floor(x), paleta.length - 2);
@@ -210,4 +216,20 @@ export function escalaCategorica(
     }
   }
   return m;
+}
+
+/**
+ * Mapa `categoría -> color` **determinista** a partir de un objeto
+ * `clave -> categoría` (el mismo que recibe `<MapaMexico categorias>`). A
+ * diferencia de `escalaCategorica`, ordena las categorías **alfabéticamente**,
+ * así que no depende del orden de iteración del objeto: el mapa y la leyenda
+ * obtienen exactamente los mismos colores. Es justo lo que usa `<MapaMexico>`
+ * internamente; úsalo también para construir la `<Leyenda tipo="categorias">`.
+ */
+export function coloresCategorias(
+  categorias: Record<string, string>,
+  paleta: Paleta = PALETA_CATEGORICA,
+): Map<string, string> {
+  const unicas = [...new Set(Object.values(categorias))].sort();
+  return escalaCategorica(unicas, paleta);
 }

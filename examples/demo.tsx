@@ -2,10 +2,9 @@ import { createRoot } from "react-dom/client";
 import { useMemo, useState } from "react";
 import { MapaMexico, Leyenda } from "../src/react";
 import {
-  ESTADOS,
   REGIONES,
   REGION_POR_ESTADO,
-  escalaCategorica,
+  coloresCategorias,
   type Estado,
   type NombrePaleta,
 } from "../src/index";
@@ -59,9 +58,9 @@ const PALETAS_DEMO: { valor: NombrePaleta; etiqueta: string }[] = [
   { valor: "teal", etiqueta: "Teal" },
 ];
 
-// Colores de las regiones, en el mismo orden que pinta <MapaMexico> (orden
-// oficial de los estados), para que la leyenda concuerde con el mapa.
-const COLOR_REGION = escalaCategorica(ESTADOS.map((e) => REGION_POR_ESTADO[e.cve]!));
+// Colores de las regiones, idénticos a los que pinta <MapaMexico> (mismo helper
+// determinista), para que la leyenda concuerde con el mapa.
+const COLOR_REGION = coloresCategorias(REGION_POR_ESTADO);
 const LEYENDA_REGIONES = REGIONES.map(
   (r) => [r.nombre, COLOR_REGION.get(r.reg) ?? "#ccc"] as [string, string],
 );

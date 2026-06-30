@@ -9,7 +9,7 @@ import { ESTADOS } from "./estados.generated";
 import type { Estado } from "./types";
 import {
   PALETA_CATEGORICA,
-  escalaCategorica,
+  coloresCategorias,
   interpolaPaleta,
   resuelvePaleta,
   type Paleta,
@@ -78,12 +78,12 @@ export function MapaMexico({
 
   const cols = useMemo<Paleta>(() => resuelvePaleta(paleta, colorRange), [paleta, colorRange]);
 
-  // Colores estables por categoría (en el orden oficial de los estados).
-  const colorPorCategoria = useMemo(() => {
-    if (!categorias) return null;
-    const enOrden = ESTADOS.map((e) => categorias[e.cve]).filter((c): c is string => c != null);
-    return escalaCategorica(enOrden, paletaCategorica);
-  }, [categorias, paletaCategorica]);
+  // Colores estables por categoría (orden alfabético, determinista). El mismo
+  // helper `coloresCategorias` sirve para construir la leyenda y que coincida.
+  const colorPorCategoria = useMemo(
+    () => (categorias ? coloresCategorias(categorias, paletaCategorica) : null),
+    [categorias, paletaCategorica],
+  );
 
   const { paths, min, max } = useMemo(() => {
     const fc = feature(

@@ -6,11 +6,11 @@
  * `CVE_ENT -> región` listo para la prop `categorias`.
  */
 import { MapaMexico, Leyenda } from "@webrek/mx-geo/react";
-import { ESTADOS, REGIONES, REGION_POR_ESTADO, escalaCategorica } from "@webrek/mx-geo";
+import { REGIONES, REGION_POR_ESTADO, coloresCategorias } from "@webrek/mx-geo";
 
-// Reproduce los colores que asigna el mapa (orden oficial de los estados) para
-// que la leyenda concuerde con lo que se ve.
-const colorPorRegion = escalaCategorica(ESTADOS.map((e) => REGION_POR_ESTADO[e.cve]!));
+// `coloresCategorias` da los MISMOS colores que pinta el mapa (es lo que usa por
+// dentro), así que la leyenda concuerda siempre con lo que se ve.
+const colorPorRegion = coloresCategorias(REGION_POR_ESTADO);
 const entradasLeyenda = REGIONES.map(
   (r) => [r.nombre, colorPorRegion.get(r.reg) ?? "#ccc"] as [string, string],
 );

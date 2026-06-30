@@ -127,6 +127,19 @@ import { REGION_POR_ESTADO, REGIONES, estadosDeRegion } from "@webrek/mx-geo";
 estadosDeRegion("norte").map((e) => e.nombreCorto); // ["Baja California", …]
 ```
 
+Para que la **leyenda** use exactamente los mismos colores que el mapa, calcula
+el mapa `categoría -> color` con `coloresCategorias` (es el que usa `<MapaMexico>`
+por dentro; determinista, no depende del orden del objeto):
+
+```tsx
+import { coloresCategorias, REGIONES } from "@webrek/mx-geo";
+
+const colores = coloresCategorias(REGION_POR_ESTADO);
+const leyenda = REGIONES.map((r) => [r.nombre, colores.get(r.reg)!] as [string, string]);
+
+<Leyenda tipo="categorias" titulo="Región" categorias={leyenda} />;
+```
+
 ¿Tus propias zonas de venta? Pasa tu mapa `CVE_ENT -> zona` a `categorias`:
 
 ```tsx

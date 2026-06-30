@@ -8,6 +8,7 @@ import {
   escalaSecuencial,
   escalaCuantil,
   escalaCategorica,
+  coloresCategorias,
 } from "../src/colores";
 
 describe("lerpHex", () => {
@@ -21,6 +22,14 @@ describe("lerpHex", () => {
   it("recorta t fuera de [0,1]", () => {
     expect(lerpHex("#000000", "#ffffff", -1)).toBe("#000000");
     expect(lerpHex("#000000", "#ffffff", 2)).toBe("#ffffff");
+  });
+  it("acepta hex corto (#rgb) sin producir NaN", () => {
+    expect(lerpHex("#fff", "#000", 0)).toBe("#ffffff");
+    expect(lerpHex("#f00", "#f00", 0.5)).toBe("#ff0000");
+  });
+  it("lanza con un hex inválido (en vez de pintar NaN)", () => {
+    expect(() => lerpHex("red", "#000", 0.5)).toThrow(/hex inválido/);
+    expect(() => lerpHex("#12", "#000", 0.5)).toThrow(/hex inválido/);
   });
 });
 
@@ -99,12 +108,24 @@ describe("interpolaPaleta / escalaCategorica — bordes", () => {
   it("interpolaPaleta con un solo color devuelve ese color", () => {
     expect(interpolaPaleta(["#123456"], 0.7)).toBe("#123456");
   });
+  it("interpolaPaleta lanza con paleta vacía (en vez de crashear con undefined)", () => {
+    expect(() => interpolaPaleta([], 0.5)).toThrow(/vacía/);
+  });
   it("escalaCategorica recicla la paleta si hay más categorías que colores", () => {
     const cats = Array.from({ length: PALETA_CATEGORICA.length + 2 }, (_, i) => `c${i}`);
     const m = escalaCategorica(cats);
     expect(m.size).toBe(cats.length);
     // la categoría n+0 y la n+length comparten color (módulo)
     expect(m.get("c0")).toBe(m.get(`c${PALETA_CATEGORICA.length}`));
+  });
+
+  it("coloresCategorias es determinista sin importar el orden del objeto", () => {
+    // mismos pares, distinto orden de inserción de claves
+    const a = coloresCategorias({ "19": "norte", "09": "centro", "20": "sur" });
+    const b = coloresCategorias({ "20": "sur", "19": "norte", "09": "centro" });
+    expect([...a.entries()]).toEqual([...b.entries()]);
+    // orden alfabético de categorías: centro, norte, sur
+    expect([...a.keys()]).toEqual(["centro", "norte", "sur"]);
   });
 });
 

@@ -20,6 +20,7 @@ export {
   escalaSecuencial,
   escalaCuantil,
   escalaCategorica,
+  coloresCategorias,
   type Paleta,
   type PaletaInput,
   type NombrePaleta,
