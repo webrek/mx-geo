@@ -1,0 +1,36 @@
+name: release
+
+# Publica a npm cuando se empuja un tag de versión (vX.Y.Z).
+# Requiere el secreto de repo NPM_TOKEN (token de *automatización* de npm,
+# que no pide OTP). Configúralo en:
+#   Settings → Secrets and variables → Actions → New repository secret
+#     Name:  NPM_TOKEN
+#     Value: npm_xxx (crea uno en https://www.npmjs.com/settings/<user>/tokens
+#            como "Automation")
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write # para provenance
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+          registry-url: https://registry.npmjs.org
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm check
+      - run: npm publish --access public --provenance
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
