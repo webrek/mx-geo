@@ -266,6 +266,34 @@ import { MapaBurbujas } from "@webrek/mx-geo/react";
 />;
 ```
 
+## Vue
+
+Además de React, hay un componente para **Vue 3** en `@webrek/mx-geo/vue` (mismo
+choropleth: `data`/`categorias`, paletas, etiquetas, evento `select`):
+
+```vue
+<script setup>
+import { MapaMexico } from "@webrek/mx-geo/vue";
+const ventas = { "09": 1200, 14: 980, 19: 760 };
+</script>
+
+<template>
+  <MapaMexico :data="ventas" paleta="walmart" @select="(e) => console.log(e.nombre)" />
+</template>
+```
+
+El núcleo (catálogo, escalas, `mapaSVG`, y `@webrek/mx-cp`) es framework-free, así
+que se usa igual desde Vue.
+
+## Leyenda embebida y animación
+
+`leyenda` dibuja la leyenda en una esquina del mapa; el relleno se **anima** al
+cambiar los datos (se desactiva solo con `prefers-reduced-motion` o `animar={false}`):
+
+```tsx
+<MapaMexico data={ventas} paleta="verde" leyenda leyendaTitulo="Ventas" />
+```
+
 ## Vecinos (adyacencia)
 
 Qué estados colindan con cuál. Ideal para análisis o para resaltar la zona de un

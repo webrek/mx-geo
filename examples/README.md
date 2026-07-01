@@ -23,6 +23,7 @@ así que puedes pegarlos tal cual en tu proyecto.
 | [`15-mosaico.tsx`](./15-mosaico.tsx)                       | Cartograma de mosaicos (rejilla de estados, tamaño parejo).        |
 | [`16-exportar.tsx`](./16-exportar.tsx)                     | Descargar el mapa como PNG o SVG (`descargaPNG`/`descargaSVG`).    |
 | [`17-vecinos.tsx`](./17-vecinos.tsx)                       | Resaltar un estado y sus colindantes (adyacencia).                 |
+| [`18-vue.md`](./18-vue.md)                                 | Usar el componente en Vue 3 (`@webrek/mx-geo/vue`).                |
 
 > La demo interactiva (`demo.tsx`) se compila a `docs/` y se publica en
 > <https://webrek.github.io/mx-geo/>.

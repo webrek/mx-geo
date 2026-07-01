@@ -1,11 +1,11 @@
 import { defineConfig } from "tsup";
 
-const external = ["react", "react-dom", "d3-geo", "topojson-client"];
+const external = ["react", "react-dom", "vue", "d3-geo", "topojson-client"];
 
 export default defineConfig([
   // Núcleo + estados: ligeros, ESM + CJS.
   {
-    entry: ["src/index.ts", "src/react.tsx", "src/svg.ts"],
+    entry: ["src/index.ts", "src/react.tsx", "src/svg.ts", "src/vue.ts"],
     format: ["esm", "cjs"],
     dts: true,
     clean: true,

@@ -4,6 +4,19 @@ Todas las versiones notables de este paquete se documentan aquí.
 El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/)
 y el versionado es [SemVer](https://semver.org/lang/es/).
 
+## [0.8.0]
+
+### Agregado
+
+- **Adaptador Vue** (`@webrek/mx-geo/vue`): componente `<MapaMexico>` para Vue 3
+  (choropleth por `data`/`categorias`, paletas, etiquetas, evento `select`,
+  accesible por teclado). `vue` es peer opcional. El resto del paquete (catálogo,
+  escalas, mx-cp) ya era framework-free y se usa igual desde Vue.
+- **Leyenda embebida**: prop `leyenda` (+ `leyendaTitulo`) en `<MapaMexico>` que
+  dibuja la leyenda en una esquina del mapa, sin cablearla a mano.
+- **Transiciones animadas**: el relleno se anima al cambiar los datos; se
+  desactiva solo con `prefers-reduced-motion` o con `animar={false}`.
+
 ## [0.7.0]
 
 ### Agregado

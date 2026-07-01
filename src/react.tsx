@@ -1,6 +1,14 @@
 "use client";
 
-import { useId, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import {
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+  type ReactNode,
+} from "react";
 import { geoMercator, geoPath } from "d3-geo";
 import { feature } from "topojson-client";
 import type { Feature, Geometry } from "geojson";
@@ -9,7 +17,22 @@ import { ESTADOS } from "./estados.generated";
 import { CENTROIDES_ESTADOS } from "./centroides";
 import { CapaTooltip, useTooltipPos } from "./tooltip";
 import { useZoomPan } from "./zoom";
+import { Leyenda } from "./leyenda";
 import type { Estado } from "./types";
+
+/** `true` si el usuario pidió menos animación (`prefers-reduced-motion`). */
+function usaMenosMovimiento(): boolean {
+  const [reduce, setReduce] = useState(false);
+  useEffect(() => {
+    if (typeof matchMedia !== "function") return;
+    const mq = matchMedia("(prefers-reduced-motion: reduce)");
+    setReduce(mq.matches);
+    const on = () => setReduce(mq.matches);
+    mq.addEventListener?.("change", on);
+    return () => mq.removeEventListener?.("change", on);
+  }, []);
+  return reduce;
+}
 import {
   PALETA_CATEGORICA,
   coloresCategorias,
@@ -66,6 +89,12 @@ type Props = {
   etiquetas?: boolean | "abr" | "nombre" | ((estado: Estado) => string);
   /** Color del texto de las etiquetas. */
   colorEtiqueta?: string;
+  /** Muestra una leyenda embebida en una esquina del mapa (si hay `data`/`categorias`). */
+  leyenda?: boolean;
+  /** Título de la leyenda embebida. */
+  leyendaTitulo?: string;
+  /** Anima el relleno al cambiar los datos. Se desactiva con `prefers-reduced-motion`. */
+  animar?: boolean;
   /** Etiqueta accesible del mapa. */
   ariaLabel?: string;
   className?: string;
@@ -95,12 +124,17 @@ export function MapaMexico({
   zoom,
   etiquetas,
   colorEtiqueta = "#334155",
+  leyenda,
+  leyendaTitulo,
+  animar = true,
   ariaLabel = "Mapa de México por estados",
   className,
 }: Props) {
   const titleId = useId();
   const [hover, setHover] = useState<string | null>(null);
   const [foco, setFoco] = useState<string | null>(null);
+  const menosMov = usaMenosMovimiento();
+  const transicion = animar && !menosMov ? "fill 0.3s ease" : undefined;
   const { pos, onMove, clear } = useTooltipPos();
   const svgRef = useRef<SVGSVGElement | null>(null);
   const zp = useZoomPan(svgRef, WIDTH, HEIGHT, {
@@ -203,7 +237,11 @@ export function MapaMexico({
               stroke={hover === cve || foco === cve ? "#111827" : stroke}
               strokeWidth={hover === cve || foco === cve ? 1.6 : 0.6}
               vectorEffect="non-scaling-stroke"
-              style={{ cursor: onSelect ? "pointer" : "default", outline: "none" }}
+              style={{
+                cursor: onSelect ? "pointer" : "default",
+                outline: "none",
+                transition: transicion,
+              }}
               tabIndex={onSelect ? 0 : undefined}
               role={onSelect ? "button" : undefined}
               aria-label={onSelect ? etiqueta : undefined}
@@ -255,11 +293,44 @@ export function MapaMexico({
     </svg>
   );
 
-  if (!renderTooltip) return svg;
+  const mostrarLeyenda = Boolean(leyenda && (categorias ? true : data && (max > min || max > 0)));
+
+  const necesitaWrap = Boolean(renderTooltip) || mostrarLeyenda;
+  if (!necesitaWrap) return svg;
   return (
     <div style={{ position: "relative" }}>
       {svg}
-      <CapaTooltip pos={pos}>{tip}</CapaTooltip>
+      {renderTooltip ? <CapaTooltip pos={pos}>{tip}</CapaTooltip> : null}
+      {mostrarLeyenda ? (
+        <div
+          style={{
+            position: "absolute",
+            right: 10,
+            bottom: 10,
+            background: "rgba(255,255,255,0.92)",
+            border: "1px solid #e5e7eb",
+            borderRadius: 8,
+            padding: "8px 10px",
+            boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
+          }}
+        >
+          {categorias ? (
+            <Leyenda
+              tipo="categorias"
+              titulo={leyendaTitulo}
+              categorias={[...coloresCategorias(categorias, paletaCategorica).entries()]}
+            />
+          ) : (
+            <Leyenda
+              dominio={[min, max]}
+              paleta={paleta}
+              colorRange={colorRange}
+              titulo={leyendaTitulo}
+              formato={(v) => v.toLocaleString("es-MX")}
+            />
+          )}
+        </div>
+      ) : null}
     </div>
   );
 }
