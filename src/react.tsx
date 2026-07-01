@@ -251,3 +251,4 @@ export function MapaMexico({
 export { Leyenda } from "./leyenda";
 export type { LeyendaProps } from "./leyenda";
 export { MapaBurbujas } from "./burbujas";
+export { MapaMosaico } from "./mosaico-react";

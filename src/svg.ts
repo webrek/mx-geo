@@ -9,6 +9,7 @@ import type { Feature, Geometry } from "geojson";
 import { estadosTopoJSON } from "./index";
 import { ESTADOS } from "./estados.generated";
 import { CENTROIDES_ESTADOS } from "./centroides";
+import { MOSAICO_ESTADOS, MOSAICO_COLUMNAS, MOSAICO_FILAS } from "./mosaico";
 import {
   PALETA_CATEGORICA,
   coloresCategorias,
@@ -140,5 +141,94 @@ export function mapaSVG(opts: OpcionesMapaSVG = {}): string {
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" ` +
     `width="${width}" height="${height}" role="img" aria-label="${esc(titulo)}">` +
     `<title>${esc(titulo)}</title>${bg}${paths}${labels}</svg>`
+  );
+}
+
+export interface OpcionesMosaicoSVG {
+  data?: Record<string, number>;
+  categorias?: Record<string, string>;
+  paleta?: PaletaInput;
+  colorRange?: [string, string];
+  paletaCategorica?: Paleta;
+  emptyColor?: string;
+  /** Muestra el valor bajo la abreviatura (si hay `data`). Por defecto sí. */
+  mostrarValor?: boolean;
+  formatValue?: (valor: number, estado: Estado) => string;
+  background?: string;
+  titulo?: string;
+}
+
+const TILE = 54;
+const GAP = 6;
+
+function textoContraste(fill: string): string {
+  const n = parseInt(fill.slice(1), 16);
+  const lum = 0.299 * ((n >> 16) & 255) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255);
+  return lum > 150 ? "#1f2937" : "#ffffff";
+}
+
+/**
+ * Cartograma de mosaicos como cadena SVG (sin React). Cada estado, una celda
+ * del mismo tamaño en una rejilla — peso visual parejo. Para PDFs y reportes.
+ */
+export function mosaicoSVG(opts: OpcionesMosaicoSVG = {}): string {
+  const {
+    data,
+    categorias,
+    paleta,
+    colorRange,
+    paletaCategorica = PALETA_CATEGORICA,
+    emptyColor = "#e5e7eb",
+    mostrarValor = true,
+    formatValue,
+    background,
+    titulo = "Cartograma de mosaicos de México",
+  } = opts;
+
+  const cols = resuelvePaleta(paleta, colorRange);
+  const colorCat = categorias ? coloresCategorias(categorias, paletaCategorica) : null;
+  const vals = data ? Object.values(data).filter((v) => Number.isFinite(v)) : [];
+  const min = vals.length ? Math.min(...vals) : 0;
+  const max = vals.length ? Math.max(...vals) : 0;
+
+  const fill = (cve: string): string => {
+    if (colorCat) {
+      const c = categorias?.[cve];
+      return (c != null ? colorCat.get(c) : undefined) ?? emptyColor;
+    }
+    const v = data?.[cve];
+    if (v == null || !Number.isFinite(v)) return emptyColor;
+    const t = max > min ? (v - min) / (max - min) : 1;
+    return interpolaPaleta(cols, t);
+  };
+
+  const paso = TILE + GAP;
+  const width = MOSAICO_COLUMNAS * paso - GAP;
+  const height = MOSAICO_FILAS * paso - GAP;
+
+  const celdas = ESTADOS.map((e) => {
+    const celda = MOSAICO_ESTADOS[e.cve];
+    if (!celda) return "";
+    const x = celda[0] * paso;
+    const y = celda[1] * paso;
+    const f = fill(e.cve);
+    const tc = textoContraste(f);
+    const v = data?.[e.cve];
+    const val =
+      v != null && Number.isFinite(v) ? (formatValue ? formatValue(v, e) : String(v)) : null;
+    const abrY = val && mostrarValor ? TILE / 2 - 6 : TILE / 2;
+    let t = `<g transform="translate(${x} ${y})"><rect width="${TILE}" height="${TILE}" rx="7" fill="${f}" stroke="#ffffff" stroke-width="1"/>`;
+    t += `<text x="${TILE / 2}" y="${abrY}" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="${tc}" font-family="sans-serif">${esc(e.abreviatura)}</text>`;
+    if (val && mostrarValor) {
+      t += `<text x="${TILE / 2}" y="${TILE / 2 + 11}" text-anchor="middle" dominant-baseline="central" font-size="9" fill="${tc}" font-family="sans-serif">${esc(val)}</text>`;
+    }
+    return t + "</g>";
+  }).join("");
+
+  const bg = background ? `<rect width="${width}" height="${height}" fill="${background}"/>` : "";
+  return (
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" ` +
+    `width="${width}" height="${height}" role="img" aria-label="${esc(titulo)}">` +
+    `<title>${esc(titulo)}</title>${bg}${celdas}</svg>`
   );
 }

@@ -20,6 +20,7 @@ así que puedes pegarlos tal cual en tu proyecto.
 | [`12-tooltip.tsx`](./12-tooltip.tsx)                       | Tooltip a la medida (tarjeta flotante con HTML propio).            |
 | [`13-zoom.tsx`](./13-zoom.tsx)                             | Zoom con la rueda + pan arrastrando (doble clic reinicia).         |
 | [`14-servidor-svg.ts`](./14-servidor-svg.ts)               | Render en el servidor: `mapaSVG` → cadena SVG para PDF/correo.     |
+| [`15-mosaico.tsx`](./15-mosaico.tsx)                       | Cartograma de mosaicos (rejilla de estados, tamaño parejo).        |
 
 > La demo interactiva (`demo.tsx`) se compila a `docs/` y se publica en
 > <https://webrek.github.io/mx-geo/>.

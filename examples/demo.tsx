@@ -1,6 +1,6 @@
 import { createRoot } from "react-dom/client";
 import { useMemo, useState } from "react";
-import { MapaMexico, MapaBurbujas, Leyenda } from "../src/react";
+import { MapaMexico, MapaBurbujas, MapaMosaico, Leyenda } from "../src/react";
 import {
   REGIONES,
   REGION_POR_ESTADO,
@@ -71,7 +71,7 @@ const LEYENDA_REGIONES = REGIONES.map(
 );
 
 type Modo = "base" | "tiendas" | "rand" | "regiones";
-type Tipo = "choropleth" | "burbujas";
+type Tipo = "choropleth" | "burbujas" | "mosaico";
 
 function App() {
   const [mode, setMode] = useState<Modo>("tiendas");
@@ -184,6 +184,7 @@ function App() {
                 <select value={tipo} onChange={(e) => setTipo(e.target.value as Tipo)}>
                   <option value="choropleth">Choropleth</option>
                   <option value="burbujas">Burbujas</option>
+                  <option value="mosaico">Mosaico</option>
                 </select>
               </label>
             ) : null}
@@ -250,7 +251,16 @@ function App() {
 
           <div className="stage">
             <div className="map">
-              {tipo === "burbujas" && mode !== "regiones" && data ? (
+              {tipo === "mosaico" ? (
+                <MapaMosaico
+                  data={data}
+                  categorias={catRegiones}
+                  paleta={paleta}
+                  onSelect={abrirEstado}
+                  renderTooltip={tooltip ? tip : undefined}
+                  formatValue={(v) => fmtVal(v)}
+                />
+              ) : tipo === "burbujas" && mode !== "regiones" && data ? (
                 <MapaBurbujas
                   data={data}
                   color="#2563eb"
@@ -277,7 +287,7 @@ function App() {
                   categorias={LEYENDA_REGIONES}
                   className="leyenda"
                 />
-              ) : data && tipo === "choropleth" ? (
+              ) : data && (tipo === "choropleth" || tipo === "mosaico") ? (
                 <Leyenda
                   dominio={dominio}
                   paleta={paleta}

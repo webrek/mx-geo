@@ -12,6 +12,10 @@ y el versionado es [SemVer](https://semver.org/lang/es/).
   choropleth de estados como una cadena SVG **sin React ni navegador**. Para
   incrustar en PDFs, correos o reportes. Soporta `data`/`categorias`, paletas,
   `etiquetas`, tamaño, fondo y título; el texto se escapa para XML.
+- **Cartograma de mosaicos**: `<MapaMosaico>` (`@webrek/mx-geo/react`) dibuja los
+  32 estados en una rejilla, cada uno del mismo tamaño (peso visual parejo; los
+  chicos del centro se ven igual que los grandes). También `mosaicoSVG(opts)` en
+  el subpath `/svg` para el servidor, y el layout `MOSAICO_ESTADOS`.
 
 ## [0.5.0]
 

@@ -266,6 +266,22 @@ import { MapaBurbujas } from "@webrek/mx-geo/react";
 />;
 ```
 
+## Cartograma de mosaicos
+
+`<MapaMosaico>` acomoda los 32 estados en una **rejilla**, cada uno del mismo
+tamaño. Resuelve que CDMX, Morelos o Tlaxcala se pierdan por chiquitos y da peso
+visual parejo. Se colorea igual que el choropleth (`data` o `categorias`):
+
+```tsx
+import { MapaMosaico } from "@webrek/mx-geo/react";
+
+<MapaMosaico data={ventas} paleta="walmart" formatValue={(v) => fmt(v)} />
+<MapaMosaico categorias={REGION_POR_ESTADO} /> {/* por región */}
+```
+
+Cada mosaico muestra la abreviatura y, si hay dato, el valor debajo. Para el
+servidor está `mosaicoSVG(opts)` en `@webrek/mx-geo/svg`.
+
 ## Render en el servidor (para PDF / correo)
 
 `@webrek/mx-geo/svg` genera el choropleth como **cadena SVG sin React ni
