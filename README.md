@@ -18,6 +18,10 @@ Mapa de **México por estados** para dashboards, con la división política llav
 El núcleo de datos (catálogo + TopoJSON + helpers) no depende de React; el componente
 vive en el subpath `@webrek/mx-geo/react`.
 
+> **Paquete hermano:** [`@webrek/mx-cp`](https://github.com/webrek/mx-cp) resuelve
+> **códigos postales** (SEPOMEX) a estado, municipio (`CVEGEO`) y colonias; su
+> `cvegeo` cruza directo con los mapas de aquí.
+
 ## Instalación
 
 ```bash
