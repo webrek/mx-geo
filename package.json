@@ -48,8 +48,9 @@
     }
   },
   "scripts": {
-    "build:data": "node scripts/build-data.mjs && mapshaper scripts/estados.geojson -simplify 6% keep-shapes -clean -o format=topojson data/estados.topo.json",
+    "build:data": "node scripts/build-data.mjs",
     "build:data:municipios": "NODE_OPTIONS=--max-old-space-size=8192 node scripts/build-municipios.mjs",
+    "build:data:estados": "NODE_OPTIONS=--max-old-space-size=4096 node scripts/build-estados.mjs",
     "build": "tsup",
     "build:demo": "node scripts/build-demo.mjs",
     "typecheck": "tsc --noEmit",

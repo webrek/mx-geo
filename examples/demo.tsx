@@ -245,7 +245,7 @@ function App() {
       )}
 
       <footer>
-        Geometría: Natural Earth (estados) · INEGI, Marco Geoestadístico (municipios). Demo con los
+        Geometría: INEGI, Marco Geoestadístico (estados disueltos de municipios). Demo con los
         componentes reales <code>&lt;MapaMexico&gt;</code>, <code>&lt;MapaMunicipios&gt;</code> y{" "}
         <code>&lt;Leyenda&gt;</code>.
       </footer>

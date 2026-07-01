@@ -4,3 +4,5 @@ dist
 scripts/ne10_admin1.geojson
 scripts/inegi_mun_*.geojson
 scripts/municipios.simpl.geojson
+scripts/estados.geojson
+scripts/estados-from-mun.topo.json

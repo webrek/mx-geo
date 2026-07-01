@@ -9,7 +9,8 @@ Mapa de **México por estados** para dashboards, con la división política llav
 
 1. Un **catálogo tipado** de los 32 estados (clave INEGI, nombre, ISO 3166-2, capital,
    **región, población del Censo 2020, superficie y huso horario**).
-2. Un **TopoJSON** ligero (~17 KB) de las 32 geometrías, ya llaveado por `CVE_ENT`.
+2. Un **TopoJSON** de las 32 geometrías en alta resolución (disueltas de los
+   municipios de INEGI, ~75 KB gzip), ya llaveado por `CVE_ENT`.
 3. Un componente **React choropleth** (`<MapaMexico>`) que se pinta solo con tus datos —
    SVG puro, **sin librería de mapas ni API key**— con **paletas con nombre**, **modo
    categórico** (por región o tus zonas) y un componente **`<Leyenda>`**.
@@ -232,23 +233,26 @@ cuantiles y el patrón de Next.js App Router.
 
 ## Datos, fuentes y precisión
 
-- **Geometría:** [Natural Earth](https://www.naturalearthdata.com/) (admin-1, 1:10m),
-  de **dominio público**, simplificada para web.
+- **Geometría de estados:** disuelta del **Marco Geoestadístico de INEGI**
+  (los mismos municipios, fundidos por `CVE_ENT`), así los bordes de estado
+  coinciden exactamente con el drill-down y se ven con la misma resolución.
+  Simplificada para web (~75 KB gzip).
 - **Claves y nombres:** `CVE_ENT` y nomenclatura oficial de **INEGI**.
 - **Municipios:** **Marco Geoestadístico de INEGI** (servicio ArcGIS), **2,475**
   municipios en alta resolución, simplificados para web y partidos por estado.
 - **Vigencia:** la geometría es de referencia/visualización, no catastral. CDMX usa el
-  ISO vigente `MX-CMX` (Natural Earth todavía la etiqueta como `DIF` internamente; aquí
-  ya queda normalizada).
+  ISO vigente `MX-CMX`.
 
 ## Desarrollo
 
 ```bash
 pnpm install
-pnpm build:data   # regenera catálogo + TopoJSON desde Natural Earth
-pnpm check        # format + typecheck + test + build
+pnpm build:data            # regenera el catálogo tipado (src/estados.generated.ts)
+pnpm build:data:municipios # baja y arma los municipios (INEGI ArcGIS)
+pnpm build:data:estados    # disuelve los municipios -> TopoJSON de estados
+pnpm check                 # format + typecheck + test + build
 ```
 
 ## Licencia
 
-MIT © webrek. Incluye datos de Natural Earth (dominio público).
+MIT © webrek. Geometría derivada del Marco Geoestadístico de **INEGI**.

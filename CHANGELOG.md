@@ -6,6 +6,14 @@ y el versionado es [SemVer](https://semver.org/lang/es/).
 
 ## [0.4.0]
 
+### Cambiado
+
+- **Estados en alta resolución.** El TopoJSON de los 32 estados ahora se
+  **disuelve de los municipios de INEGI** (en vez de Natural Earth simplificado
+  al 6%, que se veía poligonal). Los bordes de estado coinciden exactamente con
+  el drill-down de municipios y se ven con la misma nitidez. Pesa ~75 KB gzip
+  (antes ~4 KB, mucho más burdo). Nuevo script `pnpm build:data:estados`.
+
 ### Agregado
 
 - **Paletas de color con nombre.** Los mapas aceptan una prop `paleta` con un
