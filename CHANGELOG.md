@@ -12,6 +12,10 @@ y el versionado es [SemVer](https://semver.org/lang/es/).
   `sonVecinos(a, b)` y el mapa `VECINOS`. Calculado desde los arcos compartidos
   del TopoJSON (con parche para la frontera BC↔BCS). Útil para análisis y para
   resaltar los estados colindantes.
+- **Accesibilidad por teclado**: cuando pasas `onSelect`, cada estado/municipio/
+  burbuja es un `role="button"` enfocable (`tabindex`), con `aria-label`, foco
+  visible y activación con Enter/Espacio; el `<svg>` pasa a `role="group"`. Sin
+  `onSelect` se mantiene como `role="img"` no interactivo.
 
 ## [0.6.0]
 

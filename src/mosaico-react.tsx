@@ -61,6 +61,7 @@ export function MapaMosaico({
 }: Props) {
   const titleId = useId();
   const [hover, setHover] = useState<string | null>(null);
+  const [foco, setFoco] = useState<string | null>(null);
   const { pos, onMove, clear } = useTooltipPos();
 
   const cols = useMemo<Paleta>(() => resuelvePaleta(paleta, colorRange), [paleta, colorRange]);
@@ -99,7 +100,7 @@ export function MapaMosaico({
     <svg
       viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
       className={className}
-      role="img"
+      role={onSelect ? "group" : "img"}
       aria-labelledby={titleId}
       style={{ width: "100%", height: "auto", display: "block" }}
       onMouseMove={renderTooltip ? onMove : undefined}
@@ -127,9 +128,24 @@ export function MapaMosaico({
           <g
             key={e.cve}
             transform={`translate(${x} ${y})`}
-            style={{ cursor: onSelect ? "pointer" : "default" }}
+            style={{ cursor: onSelect ? "pointer" : "default", outline: "none" }}
+            tabIndex={onSelect ? 0 : undefined}
+            role={onSelect ? "button" : undefined}
+            aria-label={onSelect ? nativo : undefined}
             onMouseEnter={() => setHover(e.cve)}
             onMouseLeave={() => setHover((h) => (h === e.cve ? null : h))}
+            onFocus={onSelect ? () => setFoco(e.cve) : undefined}
+            onBlur={onSelect ? () => setFoco((f) => (f === e.cve ? null : f)) : undefined}
+            onKeyDown={
+              onSelect
+                ? (ev) => {
+                    if (ev.key === "Enter" || ev.key === " ") {
+                      ev.preventDefault();
+                      onSelect(e);
+                    }
+                  }
+                : undefined
+            }
             onClick={onSelect ? () => onSelect(e) : undefined}
             data-cve={e.cve}
           >
@@ -138,8 +154,8 @@ export function MapaMosaico({
               height={TILE}
               rx={7}
               fill={fill}
-              stroke={hover === e.cve ? "#111827" : "#ffffff"}
-              strokeWidth={hover === e.cve ? 2 : 1}
+              stroke={hover === e.cve || foco === e.cve ? "#111827" : "#ffffff"}
+              strokeWidth={hover === e.cve || foco === e.cve ? 2 : 1}
             />
             <text
               x={TILE / 2}

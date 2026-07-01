@@ -100,6 +100,7 @@ export function MapaMexico({
 }: Props) {
   const titleId = useId();
   const [hover, setHover] = useState<string | null>(null);
+  const [foco, setFoco] = useState<string | null>(null);
   const { pos, onMove, clear } = useTooltipPos();
   const svgRef = useRef<SVGSVGElement | null>(null);
   const zp = useZoomPan(svgRef, WIDTH, HEIGHT, {
@@ -176,7 +177,7 @@ export function MapaMexico({
       ref={svgRef}
       viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
       className={className}
-      role="img"
+      role={onSelect ? "group" : "img"}
       aria-labelledby={titleId}
       style={{ width: "100%", height: "auto", display: "block", ...zStyle }}
       onMouseMove={renderTooltip ? onMove : undefined}
@@ -199,12 +200,27 @@ export function MapaMexico({
               key={cve}
               d={d}
               fill={fillFor(cve)}
-              stroke={stroke}
-              strokeWidth={hover === cve ? 1.5 : 0.6}
+              stroke={hover === cve || foco === cve ? "#111827" : stroke}
+              strokeWidth={hover === cve || foco === cve ? 1.6 : 0.6}
               vectorEffect="non-scaling-stroke"
               style={{ cursor: onSelect ? "pointer" : "default", outline: "none" }}
+              tabIndex={onSelect ? 0 : undefined}
+              role={onSelect ? "button" : undefined}
+              aria-label={onSelect ? etiqueta : undefined}
               onMouseEnter={() => setHover(cve)}
               onMouseLeave={() => setHover((h) => (h === cve ? null : h))}
+              onFocus={onSelect ? () => setFoco(cve) : undefined}
+              onBlur={onSelect ? () => setFoco((f) => (f === cve ? null : f)) : undefined}
+              onKeyDown={
+                onSelect && e
+                  ? (ev) => {
+                      if (ev.key === "Enter" || ev.key === " ") {
+                        ev.preventDefault();
+                        onSelect(e);
+                      }
+                    }
+                  : undefined
+              }
               onClick={
                 onSelect && e ? () => (zp.seArrastro() ? undefined : onSelect(e)) : undefined
               }

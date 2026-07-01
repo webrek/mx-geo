@@ -143,6 +143,7 @@ export function MapaMunicipios({
 }: Props) {
   const titleId = useId();
   const [hover, setHover] = useState<string | null>(null);
+  const [foco, setFoco] = useState<string | null>(null);
   const [topo, setTopo] = useState<MunicipiosEstadoTopo | null>(null);
   const svgRef = useRef<SVGSVGElement | null>(null);
   const zp = useZoomPan(svgRef, WIDTH, HEIGHT, {
@@ -213,7 +214,7 @@ export function MapaMunicipios({
       ref={svgRef}
       viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
       className={className}
-      role="img"
+      role={onSelect ? "group" : "img"}
       aria-labelledby={titleId}
       style={{ width: "100%", height: "auto", ...zStyle }}
       {...zHandlers}
@@ -231,12 +232,27 @@ export function MapaMunicipios({
               key={m.cvegeo}
               d={d}
               fill={fillFor(m.cvegeo)}
-              stroke={stroke}
-              strokeWidth={hover === m.cvegeo ? 1.2 : 0.4}
+              stroke={hover === m.cvegeo || foco === m.cvegeo ? "#111827" : stroke}
+              strokeWidth={hover === m.cvegeo || foco === m.cvegeo ? 1.3 : 0.4}
               vectorEffect="non-scaling-stroke"
               style={{ cursor: onSelect ? "pointer" : "default", outline: "none" }}
+              tabIndex={onSelect ? 0 : undefined}
+              role={onSelect ? "button" : undefined}
+              aria-label={onSelect ? etiqueta : undefined}
               onMouseEnter={() => setHover(m.cvegeo)}
               onMouseLeave={() => setHover((h) => (h === m.cvegeo ? null : h))}
+              onFocus={onSelect ? () => setFoco(m.cvegeo) : undefined}
+              onBlur={onSelect ? () => setFoco((f) => (f === m.cvegeo ? null : f)) : undefined}
+              onKeyDown={
+                onSelect
+                  ? (ev) => {
+                      if (ev.key === "Enter" || ev.key === " ") {
+                        ev.preventDefault();
+                        onSelect(m);
+                      }
+                    }
+                  : undefined
+              }
               onClick={onSelect ? () => (zp.seArrastro() ? undefined : onSelect(m)) : undefined}
               data-cvegeo={m.cvegeo}
             >

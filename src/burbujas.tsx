@@ -57,6 +57,7 @@ export function MapaBurbujas({
 }: Props) {
   const titleId = useId();
   const [hover, setHover] = useState<string | null>(null);
+  const [foco, setFoco] = useState<string | null>(null);
   const { pos, onMove, clear } = useTooltipPos();
 
   const { paths, burbujas } = useMemo(() => {
@@ -101,7 +102,7 @@ export function MapaBurbujas({
     <svg
       viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
       className={className}
-      role="img"
+      role={onSelect ? "group" : "img"}
       aria-labelledby={titleId}
       style={{ width: "100%", height: "auto", display: "block" }}
       onMouseMove={renderTooltip ? onMove : undefined}
@@ -121,12 +122,27 @@ export function MapaBurbujas({
             cy={y}
             r={r}
             fill={color}
-            fillOpacity={hover === cve ? Math.min(1, opacidad + 0.25) : opacidad}
-            stroke={color}
-            strokeWidth={0.8}
-            style={{ cursor: onSelect ? "pointer" : "default" }}
+            fillOpacity={hover === cve || foco === cve ? Math.min(1, opacidad + 0.25) : opacidad}
+            stroke={foco === cve ? "#111827" : color}
+            strokeWidth={foco === cve ? 2 : 0.8}
+            style={{ cursor: onSelect ? "pointer" : "default", outline: "none" }}
+            tabIndex={onSelect ? 0 : undefined}
+            role={onSelect ? "button" : undefined}
+            aria-label={onSelect ? etiqueta : undefined}
             onMouseEnter={() => setHover(cve)}
             onMouseLeave={() => setHover((h) => (h === cve ? null : h))}
+            onFocus={onSelect ? () => setFoco(cve) : undefined}
+            onBlur={onSelect ? () => setFoco((f) => (f === cve ? null : f)) : undefined}
+            onKeyDown={
+              onSelect && e
+                ? (ev) => {
+                    if (ev.key === "Enter" || ev.key === " ") {
+                      ev.preventDefault();
+                      onSelect(e);
+                    }
+                  }
+                : undefined
+            }
             onClick={onSelect && e ? () => onSelect(e) : undefined}
             data-cve-burbuja={cve}
           >
