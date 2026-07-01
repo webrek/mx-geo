@@ -5,7 +5,7 @@ const external = ["react", "react-dom", "d3-geo", "topojson-client"];
 export default defineConfig([
   // Núcleo + estados: ligeros, ESM + CJS.
   {
-    entry: ["src/index.ts", "src/react.tsx"],
+    entry: ["src/index.ts", "src/react.tsx", "src/svg.ts"],
     format: ["esm", "cjs"],
     dts: true,
     clean: true,

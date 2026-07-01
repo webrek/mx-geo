@@ -4,6 +4,15 @@ Todas las versiones notables de este paquete se documentan aquí.
 El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/)
 y el versionado es [SemVer](https://semver.org/lang/es/).
 
+## [0.6.0]
+
+### Agregado
+
+- **Render en servidor** (`@webrek/mx-geo/svg`): `mapaSVG(opts)` genera el
+  choropleth de estados como una cadena SVG **sin React ni navegador**. Para
+  incrustar en PDFs, correos o reportes. Soporta `data`/`categorias`, paletas,
+  `etiquetas`, tamaño, fondo y título; el texto se escapa para XML.
+
 ## [0.5.0]
 
 ### Agregado

@@ -266,6 +266,27 @@ import { MapaBurbujas } from "@webrek/mx-geo/react";
 />;
 ```
 
+## Render en el servidor (para PDF / correo)
+
+`@webrek/mx-geo/svg` genera el choropleth como **cadena SVG sin React ni
+navegador** — ideal para un reporte en Node, un correo o un PDF:
+
+```ts
+import { mapaSVG } from "@webrek/mx-geo/svg";
+
+const svg = mapaSVG({
+  data: ventasPorEstado,
+  paleta: "walmart",
+  etiquetas: true,
+  background: "#ffffff",
+  titulo: "Ventas por estado",
+});
+// escribe el SVG, conviértelo a PNG, o pégalo en tu HTML/PDF
+```
+
+Acepta lo mismo que el choropleth (`data`/`categorias`, `paleta`/`colorRange`,
+`emptyColor`, `stroke`, `width`/`height`, `etiquetas`) y escapa el texto para XML.
+
 ## El TopoJSON directo
 
 Si quieres dibujarlo con tu propia herramienta (D3, etc.):
