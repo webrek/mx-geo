@@ -234,6 +234,18 @@ pintas una tarjeta flotante con tu propio HTML (formato, varias líneas, íconos
 
 Funciona igual en `<MapaBurbujas>`.
 
+## Zoom y pan
+
+`zoom` activa acercar con la rueda (centrado en el cursor), mover arrastrando y
+reiniciar con doble clic. Ideal para los estados chicos del centro. Disponible
+en `<MapaMexico>` y `<MapaMunicipios>`:
+
+```tsx
+<MapaMexico data={ventas} zoom />
+<MapaMexico data={ventas} zoom={{ min: 1, max: 12 }} /> {/* límites de escala */}
+<MapaMunicipios estado="09" zoom />
+```
+
 ## Mapa de burbujas
 
 Cuando quieres comparar **magnitudes absolutas**, `<MapaBurbujas>` dibuja un

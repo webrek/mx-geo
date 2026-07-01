@@ -22,6 +22,10 @@ y el versionado es [SemVer](https://semver.org/lang/es/).
 - **Tooltip a la medida**: prop `renderTooltip` en `<MapaMexico>` y
   `<MapaBurbujas>` para una tarjeta flotante que sigue al cursor (reemplaza el
   `<title>` nativo por HTML propio: formato, íconos, varias líneas).
+- **Zoom & pan**: prop `zoom` en `<MapaMexico>` y `<MapaMunicipios>` (rueda para
+  acercar centrado en el cursor, arrastrar para mover, doble clic reinicia).
+  Implementación propia, sin dependencias nuevas; el borde no se engrosa al
+  acercar (`non-scaling-stroke`).
 
 ## [0.4.0]
 

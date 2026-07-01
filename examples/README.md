@@ -18,6 +18,7 @@ así que puedes pegarlos tal cual en tu proyecto.
 | [`10-tasas-y-etiquetas.tsx`](./10-tasas-y-etiquetas.tsx)   | Tasa por cápita (normaliza) + etiquetas sobre cada estado.         |
 | [`11-burbujas.tsx`](./11-burbujas.tsx)                     | Mapa de burbujas (símbolos proporcionales al valor).               |
 | [`12-tooltip.tsx`](./12-tooltip.tsx)                       | Tooltip a la medida (tarjeta flotante con HTML propio).            |
+| [`13-zoom.tsx`](./13-zoom.tsx)                             | Zoom con la rueda + pan arrastrando (doble clic reinicia).         |
 
 > La demo interactiva (`demo.tsx`) se compila a `docs/` y se publica en
 > <https://webrek.github.io/mx-geo/>.

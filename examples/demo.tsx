@@ -141,6 +141,7 @@ function App() {
                 data={data}
                 categorias={mode === "regiones" ? REGION_POR_ESTADO : undefined}
                 paleta={paleta}
+                zoom
                 onSelect={(e) => {
                   setEstadoSel(e);
                   setDrill(e);
@@ -219,6 +220,7 @@ function App() {
                 data={muniData}
                 onSelect={setMuniSel}
                 paleta="verde"
+                zoom
                 formatValue={(v) => fmt(v)}
               />
             </div>
@@ -245,8 +247,9 @@ function App() {
       )}
 
       <footer>
-        Geometría: INEGI, Marco Geoestadístico (estados disueltos de municipios). Demo con los
-        componentes reales <code>&lt;MapaMexico&gt;</code>, <code>&lt;MapaMunicipios&gt;</code> y{" "}
+        Rueda para acercar, arrastra para mover, doble clic reinicia. · Geometría: INEGI, Marco
+        Geoestadístico (estados disueltos de municipios). Demo con los componentes reales{" "}
+        <code>&lt;MapaMexico&gt;</code>, <code>&lt;MapaMunicipios&gt;</code> y{" "}
         <code>&lt;Leyenda&gt;</code>.
       </footer>
     </div>

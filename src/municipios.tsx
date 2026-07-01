@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useId, useMemo, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState, type CSSProperties } from "react";
 import { geoMercator, geoPath } from "d3-geo";
 import { feature } from "topojson-client";
 import type { Feature, Geometry, FeatureCollection } from "geojson";
 import indexData from "../data/municipios-index.json";
 import { interpolaPaleta, resuelvePaleta, type Paleta, type PaletaInput } from "./colores";
+import { useZoomPan } from "./zoom";
 
 /** Un municipio (o alcaldía) con sus claves de INEGI. */
 export interface Municipio {
@@ -108,6 +109,8 @@ type Props = {
   emptyColor?: string;
   stroke?: string;
   formatValue?: (valor: number, municipio: Municipio) => string;
+  /** Zoom con la rueda y pan arrastrando (doble clic reinicia). */
+  zoom?: boolean | { min?: number; max?: number };
   ariaLabel?: string;
   className?: string;
 };
@@ -129,12 +132,18 @@ export function MapaMunicipios({
   emptyColor = "#e5e7eb",
   stroke = "#ffffff",
   formatValue,
+  zoom,
   ariaLabel = "Mapa de municipios",
   className,
 }: Props) {
   const titleId = useId();
   const [hover, setHover] = useState<string | null>(null);
   const [topo, setTopo] = useState<MunicipiosEstadoTopo | null>(null);
+  const svgRef = useRef<SVGSVGElement | null>(null);
+  const zp = useZoomPan(svgRef, WIDTH, HEIGHT, {
+    enabled: !!zoom,
+    ...(typeof zoom === "object" ? zoom : {}),
+  });
   const cols = useMemo<Paleta>(
     () => resuelvePaleta(paleta ?? "verde", colorRange),
     [paleta, colorRange],
@@ -186,38 +195,45 @@ export function MapaMunicipios({
     return interpolaPaleta(cols, t);
   }
 
+  const { style: zStyle, ...zHandlers } = zp.handlers as { style?: CSSProperties };
+
   return (
     <svg
+      ref={svgRef}
       viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
       className={className}
       role="img"
       aria-labelledby={titleId}
-      style={{ width: "100%", height: "auto" }}
+      style={{ width: "100%", height: "auto", ...zStyle }}
+      {...zHandlers}
     >
       <title id={titleId}>{ariaLabel}</title>
-      {paths.map(({ m, d }) => {
-        const v = data?.[m.cvegeo];
-        const etiqueta =
-          v != null && Number.isFinite(v)
-            ? `${m.nombre}: ${formatValue ? formatValue(v, m) : v}`
-            : m.nombre;
-        return (
-          <path
-            key={m.cvegeo}
-            d={d}
-            fill={fillFor(m.cvegeo)}
-            stroke={stroke}
-            strokeWidth={hover === m.cvegeo ? 1.2 : 0.4}
-            style={{ cursor: onSelect ? "pointer" : "default", outline: "none" }}
-            onMouseEnter={() => setHover(m.cvegeo)}
-            onMouseLeave={() => setHover((h) => (h === m.cvegeo ? null : h))}
-            onClick={onSelect ? () => onSelect(m) : undefined}
-            data-cvegeo={m.cvegeo}
-          >
-            <title>{etiqueta}</title>
-          </path>
-        );
-      })}
+      <g transform={zp.transform}>
+        {paths.map(({ m, d }) => {
+          const v = data?.[m.cvegeo];
+          const etiqueta =
+            v != null && Number.isFinite(v)
+              ? `${m.nombre}: ${formatValue ? formatValue(v, m) : v}`
+              : m.nombre;
+          return (
+            <path
+              key={m.cvegeo}
+              d={d}
+              fill={fillFor(m.cvegeo)}
+              stroke={stroke}
+              strokeWidth={hover === m.cvegeo ? 1.2 : 0.4}
+              vectorEffect="non-scaling-stroke"
+              style={{ cursor: onSelect ? "pointer" : "default", outline: "none" }}
+              onMouseEnter={() => setHover(m.cvegeo)}
+              onMouseLeave={() => setHover((h) => (h === m.cvegeo ? null : h))}
+              onClick={onSelect ? () => (zp.seArrastro() ? undefined : onSelect(m)) : undefined}
+              data-cvegeo={m.cvegeo}
+            >
+              <title>{etiqueta}</title>
+            </path>
+          );
+        })}
+      </g>
     </svg>
   );
 }

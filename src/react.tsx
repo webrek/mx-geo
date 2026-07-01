@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useMemo, useState, type ReactNode } from "react";
+import { useId, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { geoMercator, geoPath } from "d3-geo";
 import { feature } from "topojson-client";
 import type { Feature, Geometry } from "geojson";
@@ -8,6 +8,7 @@ import { estadosTopoJSON } from "./index";
 import { ESTADOS } from "./estados.generated";
 import { CENTROIDES_ESTADOS } from "./centroides";
 import { CapaTooltip, useTooltipPos } from "./tooltip";
+import { useZoomPan } from "./zoom";
 import type { Estado } from "./types";
 import {
   PALETA_CATEGORICA,
@@ -53,6 +54,11 @@ type Props = {
    */
   renderTooltip?: (estado: Estado, valor: number | null) => ReactNode;
   /**
+   * Habilita zoom con la rueda y pan arrastrando (doble clic reinicia). `true`
+   * usa límites por defecto; con objeto puedes fijar `min`/`max` de escala.
+   */
+  zoom?: boolean | { min?: number; max?: number };
+  /**
    * Dibuja una etiqueta de texto sobre cada estado, en su centroide:
    * `"abr"` (abreviatura, por defecto si `true`), `"nombre"` (nombre corto) o
    * una función que devuelve el texto por estado.
@@ -86,6 +92,7 @@ export function MapaMexico({
   stroke = "#ffffff",
   formatValue,
   renderTooltip,
+  zoom,
   etiquetas,
   colorEtiqueta = "#334155",
   ariaLabel = "Mapa de México por estados",
@@ -94,6 +101,11 @@ export function MapaMexico({
   const titleId = useId();
   const [hover, setHover] = useState<string | null>(null);
   const { pos, onMove, clear } = useTooltipPos();
+  const svgRef = useRef<SVGSVGElement | null>(null);
+  const zp = useZoomPan(svgRef, WIDTH, HEIGHT, {
+    enabled: !!zoom,
+    ...(typeof zoom === "object" ? zoom : {}),
+  });
 
   const cols = useMemo<Paleta>(() => resuelvePaleta(paleta, colorRange), [paleta, colorRange]);
 
@@ -157,64 +169,73 @@ export function MapaMexico({
   const tip =
     renderTooltip && hover ? renderTooltip(PORCVE.get(hover)!, data?.[hover] ?? null) : null;
 
+  const { style: zStyle, ...zHandlers } = zp.handlers as { style?: CSSProperties };
+
   const svg = (
     <svg
+      ref={svgRef}
       viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
       className={className}
       role="img"
       aria-labelledby={titleId}
-      style={{ width: "100%", height: "auto", display: "block" }}
+      style={{ width: "100%", height: "auto", display: "block", ...zStyle }}
       onMouseMove={renderTooltip ? onMove : undefined}
       onMouseLeave={renderTooltip ? clear : undefined}
+      {...zHandlers}
     >
       <title id={titleId}>{ariaLabel}</title>
-      {paths.map(({ cve, d }) => {
-        const e = PORCVE.get(cve);
-        const v = data?.[cve];
-        const etiqueta =
-          v != null && Number.isFinite(v)
-            ? `${e?.nombreCorto}: ${formatValue ? formatValue(v, e!) : v}`
-            : categorias?.[cve] != null
-              ? `${e?.nombreCorto}: ${categorias[cve]}`
-              : (e?.nombreCorto ?? cve);
-        return (
-          <path
-            key={cve}
-            d={d}
-            fill={fillFor(cve)}
-            stroke={stroke}
-            strokeWidth={hover === cve ? 1.5 : 0.6}
-            style={{ cursor: onSelect ? "pointer" : "default", outline: "none" }}
-            onMouseEnter={() => setHover(cve)}
-            onMouseLeave={() => setHover((h) => (h === cve ? null : h))}
-            onClick={onSelect && e ? () => onSelect(e) : undefined}
-            data-cve={cve}
-          >
-            {renderTooltip ? null : <title>{etiqueta}</title>}
-          </path>
-        );
-      })}
-      {etiquetas
-        ? paths.map(({ cve }) => {
-            const e = PORCVE.get(cve);
-            const p = centros[cve];
-            if (!e || !p) return null;
-            return (
-              <text
-                key={`t-${cve}`}
-                x={p[0]}
-                y={p[1]}
-                textAnchor="middle"
-                dominantBaseline="central"
-                fontSize={9}
-                fill={colorEtiqueta}
-                style={{ pointerEvents: "none", userSelect: "none" }}
-              >
-                {textoEtiqueta(e)}
-              </text>
-            );
-          })
-        : null}
+      <g transform={zp.transform}>
+        {paths.map(({ cve, d }) => {
+          const e = PORCVE.get(cve);
+          const v = data?.[cve];
+          const etiqueta =
+            v != null && Number.isFinite(v)
+              ? `${e?.nombreCorto}: ${formatValue ? formatValue(v, e!) : v}`
+              : categorias?.[cve] != null
+                ? `${e?.nombreCorto}: ${categorias[cve]}`
+                : (e?.nombreCorto ?? cve);
+          return (
+            <path
+              key={cve}
+              d={d}
+              fill={fillFor(cve)}
+              stroke={stroke}
+              strokeWidth={hover === cve ? 1.5 : 0.6}
+              vectorEffect="non-scaling-stroke"
+              style={{ cursor: onSelect ? "pointer" : "default", outline: "none" }}
+              onMouseEnter={() => setHover(cve)}
+              onMouseLeave={() => setHover((h) => (h === cve ? null : h))}
+              onClick={
+                onSelect && e ? () => (zp.seArrastro() ? undefined : onSelect(e)) : undefined
+              }
+              data-cve={cve}
+            >
+              {renderTooltip ? null : <title>{etiqueta}</title>}
+            </path>
+          );
+        })}
+        {etiquetas
+          ? paths.map(({ cve }) => {
+              const e = PORCVE.get(cve);
+              const p = centros[cve];
+              if (!e || !p) return null;
+              return (
+                <text
+                  key={`t-${cve}`}
+                  x={p[0]}
+                  y={p[1]}
+                  textAnchor="middle"
+                  dominantBaseline="central"
+                  fontSize={9}
+                  fill={colorEtiqueta}
+                  style={{ pointerEvents: "none", userSelect: "none" }}
+                >
+                  {textoEtiqueta(e)}
+                </text>
+              );
+            })
+          : null}
+      </g>
     </svg>
   );
 
