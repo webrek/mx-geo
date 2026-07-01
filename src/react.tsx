@@ -6,6 +6,7 @@ import { feature } from "topojson-client";
 import type { Feature, Geometry } from "geojson";
 import { estadosTopoJSON } from "./index";
 import { ESTADOS } from "./estados.generated";
+import { CENTROIDES_ESTADOS } from "./centroides";
 import type { Estado } from "./types";
 import {
   PALETA_CATEGORICA,
@@ -45,6 +46,14 @@ type Props = {
   stroke?: string;
   /** Da formato al valor mostrado en el tooltip nativo. */
   formatValue?: (valor: number, estado: Estado) => string;
+  /**
+   * Dibuja una etiqueta de texto sobre cada estado, en su centroide:
+   * `"abr"` (abreviatura, por defecto si `true`), `"nombre"` (nombre corto) o
+   * una función que devuelve el texto por estado.
+   */
+  etiquetas?: boolean | "abr" | "nombre" | ((estado: Estado) => string);
+  /** Color del texto de las etiquetas. */
+  colorEtiqueta?: string;
   /** Etiqueta accesible del mapa. */
   ariaLabel?: string;
   className?: string;
@@ -70,6 +79,8 @@ export function MapaMexico({
   emptyColor = "#e5e7eb",
   stroke = "#ffffff",
   formatValue,
+  etiquetas,
+  colorEtiqueta = "#334155",
   ariaLabel = "Mapa de México por estados",
   className,
 }: Props) {
@@ -85,7 +96,7 @@ export function MapaMexico({
     [categorias, paletaCategorica],
   );
 
-  const { paths, min, max } = useMemo(() => {
+  const { paths, centros, min, max } = useMemo(() => {
     const fc = feature(
       estadosTopoJSON as never,
       (estadosTopoJSON as never as { objects: { estados: unknown } }).objects.estados as never,
@@ -108,8 +119,21 @@ export function MapaMexico({
       cve: f.properties.cve,
       d: path(f) ?? "",
     }));
-    return { paths, min, max };
+
+    // Centroides proyectados a píxeles, para las etiquetas.
+    const centros: Record<string, [number, number]> = {};
+    for (const [cve, ll] of Object.entries(CENTROIDES_ESTADOS)) {
+      const p = projection(ll);
+      if (p) centros[cve] = p;
+    }
+    return { paths, centros, min, max };
   }, [data]);
+
+  function textoEtiqueta(e: Estado): string {
+    if (typeof etiquetas === "function") return etiquetas(e);
+    if (etiquetas === "nombre") return e.nombreCorto;
+    return e.abreviatura;
+  }
 
   function fillFor(cve: string): string {
     if (colorPorCategoria) {
@@ -157,9 +181,31 @@ export function MapaMexico({
           </path>
         );
       })}
+      {etiquetas
+        ? paths.map(({ cve }) => {
+            const e = PORCVE.get(cve);
+            const p = centros[cve];
+            if (!e || !p) return null;
+            return (
+              <text
+                key={`t-${cve}`}
+                x={p[0]}
+                y={p[1]}
+                textAnchor="middle"
+                dominantBaseline="central"
+                fontSize={9}
+                fill={colorEtiqueta}
+                style={{ pointerEvents: "none", userSelect: "none" }}
+              >
+                {textoEtiqueta(e)}
+              </text>
+            );
+          })
+        : null}
     </svg>
   );
 }
 
 export { Leyenda } from "./leyenda";
 export type { LeyendaProps } from "./leyenda";
+export { MapaBurbujas } from "./burbujas";

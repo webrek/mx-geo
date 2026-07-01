@@ -15,11 +15,14 @@ import { readFile, writeFile, rm } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
 import mapshaper from "mapshaper";
+import { feature } from "topojson-client";
+import { geoCentroid } from "d3-geo";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = resolve(__dirname, "..");
 const munDir = resolve(root, "data/municipios");
 const salida = resolve(root, "data/estados.topo.json");
+const salidaCentroides = resolve(root, "data/centroides-estados.json");
 const simplify = process.argv[2] ?? "8%";
 const precision = process.argv[3] ?? "0.0004";
 
@@ -57,6 +60,16 @@ async function main() {
   await writeFile(salida, JSON.stringify(topo));
   await rm(tmp, { force: true });
   console.log(`escrito ${salida} (${geoms.length} estados, simplify ${simplify})`);
+
+  // Centroides [lon, lat] por estado, para etiquetas y burbujas (sin d3 en runtime).
+  const fc = feature(topo, topo.objects.estados);
+  const centroides = {};
+  for (const f of fc.features) {
+    const [lon, lat] = geoCentroid(f);
+    centroides[f.properties.cve] = [Math.round(lon * 1e4) / 1e4, Math.round(lat * 1e4) / 1e4];
+  }
+  await writeFile(salidaCentroides, JSON.stringify(centroides));
+  console.log(`escrito ${salidaCentroides} (${Object.keys(centroides).length} centroides)`);
 }
 
 main().catch((err) => {

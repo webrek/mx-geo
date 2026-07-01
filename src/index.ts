@@ -31,10 +31,16 @@ export {
 // Helpers de agregación
 export { agregaMunicipiosAEstado } from "./agrega";
 
+// Tasas y densidad (usan el catálogo enriquecido)
+export { tasa, porCapita, porKm2, densidadPoblacion, type Denominador } from "./tasas";
+
+// Centroides por estado (para etiquetas y burbujas)
+export { CENTROIDES_ESTADOS, centroideEstado, type LonLat } from "./centroides";
+
 /**
  * TopoJSON de los 32 estados, llaveado por `cve` (CVE_ENT de INEGI) en las
- * propiedades de cada geometría. Geometría: Natural Earth (dominio público),
- * simplificada. El objeto se llama `estados`.
+ * propiedades de cada geometría. Geometría: Marco Geoestadístico de INEGI
+ * (municipios disueltos por estado), simplificada. El objeto se llama `estados`.
  */
 export const estadosTopoJSON = estadosTopo as unknown as EstadosTopoJSON;
 

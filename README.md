@@ -188,6 +188,49 @@ const porEstado = agregaMunicipiosAEstado({ "20067": 1200, "20001": 300 });
 // → { "20": 1500 }   listo para <MapaMexico data={porEstado} />
 ```
 
+## Tasas y densidad
+
+Los valores absolutos engañan (los estados grandes siempre “ganan”). Con la
+población (Censo 2020) y la superficie del catálogo puedes normalizar:
+
+```ts
+import { porCapita, porKm2, tasa, densidadPoblacion } from "@webrek/mx-geo";
+
+porCapita(casos, 100_000); // casos por 100 mil habitantes
+porKm2(ventas); // ventas por km²
+tasa(datos, "poblacion"); // genérico; "poblacion" | "superficie" | tu propio mapa
+densidadPoblacion()["09"]; // hab/km² de la CDMX (la más densa)
+```
+
+## Etiquetas
+
+`<MapaMexico etiquetas />` pinta el texto sobre el centroide de cada estado:
+
+```tsx
+<MapaMexico etiquetas />                    {/* abreviatura: "Jal.", "CDMX"… */}
+<MapaMexico etiquetas="nombre" />           {/* nombre corto */}
+<MapaMexico etiquetas={(e) => e.cve} />     {/* lo que tú devuelvas */}
+```
+
+¿Necesitas la coordenada para colocar tus propios marcadores?
+`centroideEstado("14")` → `[lon, lat]` (o `CENTROIDES_ESTADOS`).
+
+## Mapa de burbujas
+
+Cuando quieres comparar **magnitudes absolutas**, `<MapaBurbujas>` dibuja un
+círculo por estado con **área proporcional** al valor, sobre su centroide:
+
+```tsx
+import { MapaBurbujas } from "@webrek/mx-geo/react";
+
+<MapaBurbujas
+  data={{ "09": 9209944, "15": 16992418, "14": 8348151 }}
+  radioMax={28}
+  color="#2563eb"
+  formatValue={(v) => v.toLocaleString("es-MX")}
+/>;
+```
+
 ## El TopoJSON directo
 
 Si quieres dibujarlo con tu propia herramienta (D3, etc.):

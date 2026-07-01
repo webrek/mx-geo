@@ -15,6 +15,8 @@ así que puedes pegarlos tal cual en tu proyecto.
 | [`07-sin-react-escalas.ts`](./07-sin-react-escalas.ts)     | Paletas y escalas sin React (para D3 o tu propio SVG).             |
 | [`08-cuantiles.tsx`](./08-cuantiles.tsx)                   | Escala por cuantiles para datos sesgados + leyenda escalonada.     |
 | [`09-nextjs/`](./09-nextjs/)                               | Patrón Next.js App Router: Server Component pasa datos al cliente. |
+| [`10-tasas-y-etiquetas.tsx`](./10-tasas-y-etiquetas.tsx)   | Tasa por cápita (normaliza) + etiquetas sobre cada estado.         |
+| [`11-burbujas.tsx`](./11-burbujas.tsx)                     | Mapa de burbujas (símbolos proporcionales al valor).               |
 
 > La demo interactiva (`demo.tsx`) se compila a `docs/` y se publica en
 > <https://webrek.github.io/mx-geo/>.

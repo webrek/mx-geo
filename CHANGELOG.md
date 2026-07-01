@@ -4,6 +4,22 @@ Todas las versiones notables de este paquete se documentan aquí.
 El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/)
 y el versionado es [SemVer](https://semver.org/lang/es/).
 
+## [0.5.0]
+
+### Agregado
+
+- **Tasas y densidad** (usan el catálogo enriquecido): `porCapita(data, por)`,
+  `porKm2(data)`, `tasa(data, entre, factor)` y `densidadPoblacion()`. Convierten
+  valores absolutos en tasas por habitante/km² con la población (Censo 2020) y
+  la superficie del catálogo.
+- **Centroides por estado**: `CENTROIDES_ESTADOS` y `centroideEstado(cve)`
+  (`[lon, lat]`, precalculados en build sobre la geometría de INEGI).
+- **Etiquetas en `<MapaMexico>`**: prop `etiquetas` (`true`/`"abr"`, `"nombre"`
+  o una función) que pinta el texto sobre el centroide de cada estado.
+- **`<MapaBurbujas>`** (`@webrek/mx-geo/react`): mapa de símbolos proporcionales
+  (área ∝ valor) sobre el centroide de cada estado; alternativa al choropleth
+  para comparar magnitudes absolutas.
+
 ## [0.4.0]
 
 ### Cambiado
