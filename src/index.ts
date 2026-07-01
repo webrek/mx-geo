@@ -40,6 +40,9 @@ export { CENTROIDES_ESTADOS, centroideEstado, type LonLat } from "./centroides";
 // Cartograma de mosaicos (rejilla de estados)
 export { MOSAICO_ESTADOS, MOSAICO_COLUMNAS, MOSAICO_FILAS, type Celda } from "./mosaico";
 
+// Adyacencia (estados colindantes)
+export { VECINOS, vecinos, estadosVecinos, sonVecinos } from "./vecinos";
+
 /**
  * TopoJSON de los 32 estados, llaveado por `cve` (CVE_ENT de INEGI) en las
  * propiedades de cada geometría. Geometría: Marco Geoestadístico de INEGI

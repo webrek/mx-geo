@@ -266,6 +266,23 @@ import { MapaBurbujas } from "@webrek/mx-geo/react";
 />;
 ```
 
+## Vecinos (adyacencia)
+
+Qué estados colindan con cuál. Ideal para análisis o para resaltar la zona de un
+estado en el mapa:
+
+```ts
+import { vecinos, sonVecinos, estadosVecinos } from "@webrek/mx-geo";
+
+vecinos("19"); // ["05", "24", "28", "32"]  Nuevo León y sus colindantes
+sonVecinos("09", "13"); // false — CDMX no colinda con Hidalgo
+
+// Resaltar Jalisco + sus vecinos en el mapa:
+const zona = ["14", ...vecinos("14")];
+const cats = Object.fromEntries(zona.map((c) => [c, "zona"]));
+<MapaMexico categorias={cats} />;
+```
+
 ## Exportar a PNG / SVG
 
 Con una referencia al `<svg>` del mapa puedes descargarlo:

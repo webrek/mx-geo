@@ -4,6 +4,15 @@ Todas las versiones notables de este paquete se documentan aquí.
 El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/)
 y el versionado es [SemVer](https://semver.org/lang/es/).
 
+## [0.7.0]
+
+### Agregado
+
+- **Adyacencia de estados** (vecinos): `vecinos(cve)`, `estadosVecinos(cve)`,
+  `sonVecinos(a, b)` y el mapa `VECINOS`. Calculado desde los arcos compartidos
+  del TopoJSON (con parche para la frontera BC↔BCS). Útil para análisis y para
+  resaltar los estados colindantes.
+
 ## [0.6.0]
 
 ### Agregado

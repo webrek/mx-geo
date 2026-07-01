@@ -22,6 +22,7 @@ así que puedes pegarlos tal cual en tu proyecto.
 | [`14-servidor-svg.ts`](./14-servidor-svg.ts)               | Render en el servidor: `mapaSVG` → cadena SVG para PDF/correo.     |
 | [`15-mosaico.tsx`](./15-mosaico.tsx)                       | Cartograma de mosaicos (rejilla de estados, tamaño parejo).        |
 | [`16-exportar.tsx`](./16-exportar.tsx)                     | Descargar el mapa como PNG o SVG (`descargaPNG`/`descargaSVG`).    |
+| [`17-vecinos.tsx`](./17-vecinos.tsx)                       | Resaltar un estado y sus colindantes (adyacencia).                 |
 
 > La demo interactiva (`demo.tsx`) se compila a `docs/` y se publica en
 > <https://webrek.github.io/mx-geo/>.
