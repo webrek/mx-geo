@@ -215,6 +215,25 @@ densidadPoblacion()["09"]; // hab/km² de la CDMX (la más densa)
 ¿Necesitas la coordenada para colocar tus propios marcadores?
 `centroideEstado("14")` → `[lon, lat]` (o `CENTROIDES_ESTADOS`).
 
+## Tooltip a la medida
+
+Por defecto el tooltip es el `<title>` nativo del SVG. Con `renderTooltip`
+pintas una tarjeta flotante con tu propio HTML (formato, varias líneas, íconos):
+
+```tsx
+<MapaMexico
+  data={ventas}
+  renderTooltip={(estado, valor) => (
+    <div>
+      <strong>{estado.nombre}</strong>
+      <div>{valor === null ? "Sin dato" : `$${valor.toLocaleString("es-MX")}`}</div>
+    </div>
+  )}
+/>
+```
+
+Funciona igual en `<MapaBurbujas>`.
+
 ## Mapa de burbujas
 
 Cuando quieres comparar **magnitudes absolutas**, `<MapaBurbujas>` dibuja un

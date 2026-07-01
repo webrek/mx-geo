@@ -1,12 +1,13 @@
 "use client";
 
-import { useId, useMemo, useState } from "react";
+import { useId, useMemo, useState, type ReactNode } from "react";
 import { geoMercator, geoPath } from "d3-geo";
 import { feature } from "topojson-client";
 import type { Feature, Geometry } from "geojson";
 import { estadosTopoJSON } from "./index";
 import { ESTADOS } from "./estados.generated";
 import { CENTROIDES_ESTADOS } from "./centroides";
+import { CapaTooltip, useTooltipPos } from "./tooltip";
 import type { Estado } from "./types";
 
 type Props = {
@@ -24,8 +25,10 @@ type Props = {
   stroke?: string;
   /** Clic en una burbuja/estado. */
   onSelect?: (estado: Estado) => void;
-  /** Da formato al valor del tooltip. */
+  /** Da formato al valor del tooltip nativo. */
   formatValue?: (valor: number, estado: Estado) => string;
+  /** Tarjeta flotante a la medida (reemplaza al tooltip nativo `<title>`). */
+  renderTooltip?: (estado: Estado, valor: number) => ReactNode;
   ariaLabel?: string;
   className?: string;
 };
@@ -48,11 +51,13 @@ export function MapaBurbujas({
   stroke = "#ffffff",
   onSelect,
   formatValue,
+  renderTooltip,
   ariaLabel = "Mapa de burbujas de México",
   className,
 }: Props) {
   const titleId = useId();
   const [hover, setHover] = useState<string | null>(null);
+  const { pos, onMove, clear } = useTooltipPos();
 
   const { paths, burbujas } = useMemo(() => {
     const fc = feature(
@@ -86,13 +91,21 @@ export function MapaBurbujas({
     return { paths, burbujas };
   }, [data, radioMax]);
 
-  return (
+  const burbujaHover = hover ? burbujas.find((b) => b.cve === hover) : undefined;
+  const tip =
+    renderTooltip && burbujaHover
+      ? renderTooltip(PORCVE.get(burbujaHover.cve)!, burbujaHover.v)
+      : null;
+
+  const svg = (
     <svg
       viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
       className={className}
       role="img"
       aria-labelledby={titleId}
-      style={{ width: "100%", height: "auto" }}
+      style={{ width: "100%", height: "auto", display: "block" }}
+      onMouseMove={renderTooltip ? onMove : undefined}
+      onMouseLeave={renderTooltip ? clear : undefined}
     >
       <title id={titleId}>{ariaLabel}</title>
       {paths.map(({ cve, d }) => (
@@ -117,10 +130,18 @@ export function MapaBurbujas({
             onClick={onSelect && e ? () => onSelect(e) : undefined}
             data-cve-burbuja={cve}
           >
-            <title>{etiqueta}</title>
+            {renderTooltip ? null : <title>{etiqueta}</title>}
           </circle>
         );
       })}
     </svg>
+  );
+
+  if (!renderTooltip) return svg;
+  return (
+    <div style={{ position: "relative" }}>
+      {svg}
+      <CapaTooltip pos={pos}>{tip}</CapaTooltip>
+    </div>
   );
 }

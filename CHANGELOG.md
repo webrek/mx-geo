@@ -19,6 +19,9 @@ y el versionado es [SemVer](https://semver.org/lang/es/).
 - **`<MapaBurbujas>`** (`@webrek/mx-geo/react`): mapa de símbolos proporcionales
   (área ∝ valor) sobre el centroide de cada estado; alternativa al choropleth
   para comparar magnitudes absolutas.
+- **Tooltip a la medida**: prop `renderTooltip` en `<MapaMexico>` y
+  `<MapaBurbujas>` para una tarjeta flotante que sigue al cursor (reemplaza el
+  `<title>` nativo por HTML propio: formato, íconos, varias líneas).
 
 ## [0.4.0]
 

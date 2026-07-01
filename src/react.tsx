@@ -1,12 +1,13 @@
 "use client";
 
-import { useId, useMemo, useState } from "react";
+import { useId, useMemo, useState, type ReactNode } from "react";
 import { geoMercator, geoPath } from "d3-geo";
 import { feature } from "topojson-client";
 import type { Feature, Geometry } from "geojson";
 import { estadosTopoJSON } from "./index";
 import { ESTADOS } from "./estados.generated";
 import { CENTROIDES_ESTADOS } from "./centroides";
+import { CapaTooltip, useTooltipPos } from "./tooltip";
 import type { Estado } from "./types";
 import {
   PALETA_CATEGORICA,
@@ -47,6 +48,11 @@ type Props = {
   /** Da formato al valor mostrado en el tooltip nativo. */
   formatValue?: (valor: number, estado: Estado) => string;
   /**
+   * Tarjeta flotante a la medida al pasar el cursor (reemplaza al tooltip
+   * nativo `<title>`). Recibe el estado y su valor (`null` si no hay dato).
+   */
+  renderTooltip?: (estado: Estado, valor: number | null) => ReactNode;
+  /**
    * Dibuja una etiqueta de texto sobre cada estado, en su centroide:
    * `"abr"` (abreviatura, por defecto si `true`), `"nombre"` (nombre corto) o
    * una función que devuelve el texto por estado.
@@ -79,6 +85,7 @@ export function MapaMexico({
   emptyColor = "#e5e7eb",
   stroke = "#ffffff",
   formatValue,
+  renderTooltip,
   etiquetas,
   colorEtiqueta = "#334155",
   ariaLabel = "Mapa de México por estados",
@@ -86,6 +93,7 @@ export function MapaMexico({
 }: Props) {
   const titleId = useId();
   const [hover, setHover] = useState<string | null>(null);
+  const { pos, onMove, clear } = useTooltipPos();
 
   const cols = useMemo<Paleta>(() => resuelvePaleta(paleta, colorRange), [paleta, colorRange]);
 
@@ -146,13 +154,18 @@ export function MapaMexico({
     return interpolaPaleta(cols, t);
   }
 
-  return (
+  const tip =
+    renderTooltip && hover ? renderTooltip(PORCVE.get(hover)!, data?.[hover] ?? null) : null;
+
+  const svg = (
     <svg
       viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
       className={className}
       role="img"
       aria-labelledby={titleId}
-      style={{ width: "100%", height: "auto" }}
+      style={{ width: "100%", height: "auto", display: "block" }}
+      onMouseMove={renderTooltip ? onMove : undefined}
+      onMouseLeave={renderTooltip ? clear : undefined}
     >
       <title id={titleId}>{ariaLabel}</title>
       {paths.map(({ cve, d }) => {
@@ -177,7 +190,7 @@ export function MapaMexico({
             onClick={onSelect && e ? () => onSelect(e) : undefined}
             data-cve={cve}
           >
-            <title>{etiqueta}</title>
+            {renderTooltip ? null : <title>{etiqueta}</title>}
           </path>
         );
       })}
@@ -203,6 +216,14 @@ export function MapaMexico({
           })
         : null}
     </svg>
+  );
+
+  if (!renderTooltip) return svg;
+  return (
+    <div style={{ position: "relative" }}>
+      {svg}
+      <CapaTooltip pos={pos}>{tip}</CapaTooltip>
+    </div>
   );
 }
 
