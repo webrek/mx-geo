@@ -1,6 +1,13 @@
 import { createRoot } from "react-dom/client";
 import { useMemo, useState } from "react";
-import { MapaMexico, MapaBurbujas, MapaMosaico, Leyenda } from "../src/react";
+import {
+  MapaMexico,
+  MapaBurbujas,
+  MapaMosaico,
+  Leyenda,
+  descargaPNG,
+  descargaSVG,
+} from "../src/react";
 import {
   REGIONES,
   REGION_POR_ESTADO,
@@ -142,6 +149,13 @@ function App() {
     setSeed((s) => s + 1);
   }
 
+  function descargar(fmt: "png" | "svg") {
+    const svg = document.querySelector(".map svg") as SVGSVGElement | null;
+    if (!svg) return;
+    if (fmt === "png") descargaPNG(svg, "mapa-mexico.png", { escala: 2, fondo: "#ffffff" });
+    else descargaSVG(svg, "mapa-mexico.svg");
+  }
+
   const btn = (m: Modo, label: string) => (
     <button
       className={mode === m ? "on" : ""}
@@ -244,6 +258,8 @@ function App() {
               />
               <button type="submit">Buscar CP</button>
             </form>
+            <button onClick={() => descargar("png")}>⬇ PNG</button>
+            <button onClick={() => descargar("svg")}>⬇ SVG</button>
             <span className="tipText">Clic en un estado para ver municipios →</span>
           </div>
 
@@ -366,6 +382,7 @@ function App() {
                 onSelect={setMuniSel}
                 paleta={cpDestacado ? "rojo" : "verde"}
                 zoom
+                etiquetas={etiquetas}
                 formatValue={(v) => fmt(v)}
               />
             </div>

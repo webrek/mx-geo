@@ -252,3 +252,4 @@ export { Leyenda } from "./leyenda";
 export type { LeyendaProps } from "./leyenda";
 export { MapaBurbujas } from "./burbujas";
 export { MapaMosaico } from "./mosaico-react";
+export { svgAString, descargaSVG, descargaPNG } from "./exportar";

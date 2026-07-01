@@ -266,6 +266,29 @@ import { MapaBurbujas } from "@webrek/mx-geo/react";
 />;
 ```
 
+## Exportar a PNG / SVG
+
+Con una referencia al `<svg>` del mapa puedes descargarlo:
+
+```tsx
+import { useRef } from "react";
+import { MapaMexico, descargaPNG, descargaSVG } from "@webrek/mx-geo/react";
+
+function Tablero() {
+  const ref = useRef<HTMLDivElement>(null);
+  const svg = () => ref.current!.querySelector("svg")!;
+  return (
+    <div ref={ref}>
+      <MapaMexico data={ventas} />
+      <button onClick={() => descargaPNG(svg(), "mapa.png", { escala: 2, fondo: "#fff" })}>
+        Descargar PNG
+      </button>
+      <button onClick={() => descargaSVG(svg(), "mapa.svg")}>Descargar SVG</button>
+    </div>
+  );
+}
+```
+
 ## Cartograma de mosaicos
 
 `<MapaMosaico>` acomoda los 32 estados en una **rejilla**, cada uno del mismo

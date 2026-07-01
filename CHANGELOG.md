@@ -16,6 +16,11 @@ y el versionado es [SemVer](https://semver.org/lang/es/).
   32 estados en una rejilla, cada uno del mismo tamaño (peso visual parejo; los
   chicos del centro se ven igual que los grandes). También `mosaicoSVG(opts)` en
   el subpath `/svg` para el servidor, y el layout `MOSAICO_ESTADOS`.
+- **Etiquetas en `<MapaMunicipios>`**: prop `etiquetas` (`true`/`"nombre"` o una
+  función) que pinta el nombre sobre el centroide de cada municipio.
+- **Exportar el mapa** (`@webrek/mx-geo/react`): `descargaPNG(svg, nombre, opts)`,
+  `descargaSVG(svg, nombre)` y `svgAString(svg)` para descargar cualquier mapa
+  renderizado como PNG (con escala/fondo) o SVG.
 
 ## [0.5.0]
 

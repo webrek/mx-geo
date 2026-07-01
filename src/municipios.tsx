@@ -111,6 +111,9 @@ type Props = {
   formatValue?: (valor: number, municipio: Municipio) => string;
   /** Zoom con la rueda y pan arrastrando (doble clic reinicia). */
   zoom?: boolean | { min?: number; max?: number };
+  /** Etiqueta sobre cada municipio: `true`/`"nombre"` o una función. */
+  etiquetas?: boolean | "nombre" | ((municipio: Municipio) => string);
+  colorEtiqueta?: string;
   ariaLabel?: string;
   className?: string;
 };
@@ -133,6 +136,8 @@ export function MapaMunicipios({
   stroke = "#ffffff",
   formatValue,
   zoom,
+  etiquetas,
+  colorEtiqueta = "#334155",
   ariaLabel = "Mapa de municipios",
   className,
 }: Props) {
@@ -161,7 +166,12 @@ export function MapaMunicipios({
   }, [estado]);
 
   const { paths, min, max } = useMemo(() => {
-    if (!topo) return { paths: [] as Array<{ m: Municipio; d: string }>, min: 0, max: 0 };
+    if (!topo)
+      return {
+        paths: [] as Array<{ m: Municipio; d: string; c: [number, number] }>,
+        min: 0,
+        max: 0,
+      };
     const objName = Object.keys(topo.objects)[0]!;
     const fc = feature(
       topo as never,
@@ -184,6 +194,7 @@ export function MapaMunicipios({
     const paths = fc.features.map((f: Feature<Geometry, Municipio>) => ({
       m: f.properties,
       d: path(f) ?? "",
+      c: path.centroid(f) as [number, number],
     }));
     return { paths, min, max };
   }, [topo, data]);
@@ -233,6 +244,26 @@ export function MapaMunicipios({
             </path>
           );
         })}
+        {etiquetas
+          ? paths.map(({ m, c }) => {
+              if (!c || Number.isNaN(c[0])) return null;
+              const texto = typeof etiquetas === "function" ? etiquetas(m) : m.nombre;
+              return (
+                <text
+                  key={`t-${m.cvegeo}`}
+                  x={c[0]}
+                  y={c[1]}
+                  textAnchor="middle"
+                  dominantBaseline="central"
+                  fontSize={7}
+                  fill={colorEtiqueta}
+                  style={{ pointerEvents: "none", userSelect: "none" }}
+                >
+                  {texto}
+                </text>
+              );
+            })
+          : null}
       </g>
     </svg>
   );
