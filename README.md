@@ -52,6 +52,50 @@ buscaEstado("yucatán"); // { cve: "31", nombre: "Yucatán", capital: "Mérida",
 Esto es justo lo que necesitas para **normalizar una columna de texto a clave** antes
 de cruzarla (_join_) con tus datos de ventas, tiendas, usuarios, etc.
 
+## Diagnóstico de joins (sin perder filas en silencio)
+
+Al cruzar una columna de texto con el catálogo, `normalizaEstado` devuelve `null` en las
+que no reconoce — pero no te dice **cuáles**. `uneEstados` hace el _join_ y te entrega el
+diagnóstico completo: qué se emparejó, qué no, y qué estados quedan vacíos en el mapa.
+
+```ts
+import { uneEstados } from "@webrek/mx-geo";
+
+const { emparejados, sinMatch, faltantes } = uneEstados(ventas, (r) => r.estado);
+
+emparejados; // [{ cve: "09", estado: {…}, fila: { estado: "CDMX", monto: 100 } }, …]
+sinMatch; // [{ valor: "Sin especificar", fila: {…} }] — limpia estos valores en tu fuente
+faltantes; // ["01", "03", …] — estados sin datos, que el mapa pintará vacíos
+```
+
+Acepta clave (`"09"`/`9`), ISO, nombre, abreviatura o alias — lo mismo que `buscaEstado`.
+
+## Geocodificación inversa (coordenada → estado / municipio)
+
+¿Tienes puntos `[lon, lat]` (GPS, tiendas, tickets) y quieres saber en qué estado o
+municipio caen? _Point-in-polygon_ sobre las mismas geometrías de INEGI — **sin API keys
+ni red**.
+
+```ts
+import { estadoDeCoordenada } from "@webrek/mx-geo";
+
+estadoDeCoordenada([-99.1332, 19.4326]); // "09" (Ciudad de México)
+estadoDeCoordenada([-103.3496, 20.6597]); // "14" (Jalisco)
+estadoDeCoordenada([-120, 20]); // null (Pacífico, fuera de México)
+```
+
+Para el nivel municipio usa el subpath `@webrek/mx-geo/municipios` (carga la geometría del
+estado bajo demanda, por eso es asíncrono):
+
+```ts
+import { municipioDeCoordenada } from "@webrek/mx-geo/municipios";
+
+await municipioDeCoordenada([-99.1332, 19.4326]); // "09015" (Cuauhtémoc)
+```
+
+> El `cvegeo` que devuelve cruza directo con `@webrek/mx-cp` y con el drill-down de
+> `<MapaMunicipios>`.
+
 ## Componente choropleth
 
 ```tsx

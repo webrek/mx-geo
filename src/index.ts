@@ -37,6 +37,12 @@ export { tasa, porCapita, porKm2, densidadPoblacion, type Denominador } from "./
 // Centroides por estado (para etiquetas y burbujas)
 export { CENTROIDES_ESTADOS, centroideEstado, type LonLat } from "./centroides";
 
+// Geocodificación inversa: coordenada -> estado (point-in-polygon)
+export { estadoDeCoordenada } from "./geocode";
+
+// Diagnóstico de joins: qué se emparejó con el catálogo y qué no
+export { uneEstados, type ResultadoUnion, type FilaEmparejada, type FilaSinMatch } from "./une";
+
 // Cartograma de mosaicos (rejilla de estados)
 export { MOSAICO_ESTADOS, MOSAICO_COLUMNAS, MOSAICO_FILAS, type Celda } from "./mosaico";
 

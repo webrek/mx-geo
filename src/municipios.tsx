@@ -1,11 +1,13 @@
 "use client";
 
 import { useEffect, useId, useMemo, useRef, useState, type CSSProperties } from "react";
-import { geoMercator, geoPath } from "d3-geo";
+import { geoContains, geoMercator, geoPath } from "d3-geo";
 import { feature } from "topojson-client";
 import type { Feature, Geometry, FeatureCollection } from "geojson";
 import indexData from "../data/municipios-index.json";
 import { interpolaPaleta, resuelvePaleta, type Paleta, type PaletaInput } from "./colores";
+import { estadoDeCoordenada } from "./geocode";
+import type { LonLat } from "./centroides";
 import { useZoomPan } from "./zoom";
 
 /** Un municipio (o alcaldía) con sus claves de INEGI. */
@@ -91,6 +93,34 @@ export async function cargaMunicipios(cveEnt: string): Promise<MunicipiosEstadoT
   const topo = ((mod as { default?: unknown }).default ?? mod) as MunicipiosEstadoTopo;
   CACHE.set(cveEnt, topo);
   return topo;
+}
+
+/**
+ * Geocodificación inversa a nivel municipio: de una coordenada `[lon, lat]` al
+ * CVEGEO del municipio que la contiene, o `null` si cae fuera de México.
+ *
+ * Primero ubica el estado con {@link estadoDeCoordenada} y solo entonces carga
+ * la geometría municipal de ESE estado (un chunk), así que es barato. Es
+ * asíncrona porque la geometría municipal se carga bajo demanda.
+ *
+ * ```ts
+ * await municipioDeCoordenada([-99.1332, 19.4326]); // "09015" (Cuauhtémoc)
+ * ```
+ */
+export async function municipioDeCoordenada(punto: LonLat): Promise<string | null> {
+  const cveEnt = estadoDeCoordenada(punto);
+  if (!cveEnt) return null;
+  const topo = await cargaMunicipios(cveEnt);
+  const objeto = Object.values(topo.objects)[0];
+  if (!objeto) return null;
+  const fc = feature(topo as never, objeto as never) as unknown as FeatureCollection<
+    Geometry,
+    Municipio
+  >;
+  for (const f of fc.features) {
+    if (geoContains(f as never, punto)) return f.properties.cvegeo;
+  }
+  return null;
 }
 
 type Props = {
