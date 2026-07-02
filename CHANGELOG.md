@@ -4,6 +4,22 @@ Todas las versiones notables de este paquete se documentan aquí.
 El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/)
 y el versionado es [SemVer](https://semver.org/lang/es/).
 
+## [0.9.0]
+
+### Agregado
+
+- **Geocodificación inversa**: `estadoDeCoordenada([lon, lat])` → CVE_ENT por
+  *point-in-polygon* sobre las geometrías de INEGI, sin red ni API keys; y
+  `municipioDeCoordenada([lon, lat])` → CVEGEO en `@webrek/mx-geo/municipios`
+  (ubica el estado y carga solo su geometría, bajo demanda).
+- **Diagnóstico de joins**: `uneEstados(filas, clave)` cruza tus registros con
+  el catálogo y reporta `emparejados`, `sinMatch` (con el valor original que no
+  se reconoció) y `faltantes` (estados que el mapa pintará vacíos).
+- **Escalas Jenks y por umbrales**: `escalaJenks` (rupturas naturales de
+  Fisher-Jenks), `escalaUmbral` (cortes manuales, extremos abiertos) y
+  `rupturasJenks` (solo los cortes). Devuelven `{ color, tramos }`, compatibles
+  con `<Leyenda tipo="cuantil">`.
+
 ## [0.8.0]
 
 ### Agregado
