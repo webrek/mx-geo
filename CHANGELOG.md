@@ -4,6 +4,15 @@ Todas las versiones notables de este paquete se documentan aquí.
 El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/)
 y el versionado es [SemVer](https://semver.org/lang/es/).
 
+## [0.9.1]
+
+### Agregado
+
+- **Interactividad vanilla en el SVG de servidor**: cada `<path>` de `mapaSVG`
+  y cada celda de `mosaicoSVG` llevan ahora `data-cve` y `data-nombre`, así que
+  el SVG inyectado en el DOM se vuelve interactivo con delegación de eventos —
+  sin React, sin D3, sin build. Receta en `examples/22-vanilla.html`.
+
 ## [0.9.0]
 
 ### Agregado

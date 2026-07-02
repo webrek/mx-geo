@@ -27,6 +27,7 @@ así que puedes pegarlos tal cual en tu proyecto.
 | [`19-coordenada-a-estado.ts`](./19-coordenada-a-estado.ts) | Geocodificación inversa: `[lon, lat]` → estado y municipio.        |
 | [`20-une-estados.ts`](./20-une-estados.ts)                 | Join con diagnóstico: emparejados, sin match y estados faltantes.  |
 | [`21-jenks-y-umbrales.tsx`](./21-jenks-y-umbrales.tsx)     | Escalas Jenks (rupturas naturales) y por umbrales de negocio.      |
+| [`22-vanilla.html`](./22-vanilla.html)                     | Mapa interactivo sin React ni D3: `mapaSVG` + `data-cve` + DOM.    |
 
 > La demo interactiva (`demo.tsx`) se compila a `docs/` y se publica en
 > <https://webrek.github.io/mx-geo/>.

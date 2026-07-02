@@ -433,6 +433,25 @@ const svg = mapaSVG({
 Acepta lo mismo que el choropleth (`data`/`categorias`, `paleta`/`colorRange`,
 `emptyColor`, `stroke`, `width`/`height`, `etiquetas`) y escapa el texto para XML.
 
+### Interactivo sin React (vanilla JS)
+
+Cada `<path>` (y cada celda del `mosaicoSVG`) lleva **`data-cve` y
+`data-nombre`**, así que en el navegador el mismo SVG se vuelve interactivo con
+delegación de eventos estándar — sin React, sin D3, sin build:
+
+```js
+const mapa = document.querySelector("#mapa");
+mapa.innerHTML = mapaSVG({ data: ventas, paleta: "azul" });
+
+mapa.addEventListener("click", (ev) => {
+  const cve = ev.target.closest("path[data-cve]")?.dataset.cve;
+  if (cve) console.log(estado(cve).nombre); // catálogo completo, también sin React
+});
+```
+
+Receta completa (hover + clic + repintado con `escalaJenks`, vía CDN):
+[`examples/22-vanilla.html`](./examples/22-vanilla.html).
+
 ## El TopoJSON directo
 
 Si quieres dibujarlo con tu propia herramienta (D3, etc.):

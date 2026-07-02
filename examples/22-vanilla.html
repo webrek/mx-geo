@@ -1,0 +1,72 @@
+<!doctype html>
+<!--
+  Mapa interactivo SIN React, SIN D3, SIN build: `mapaSVG` genera el SVG con
+  `data-cve`/`data-nombre` en cada estado, y la interactividad es delegación
+  de eventos estándar del DOM. Sirve este archivo con cualquier estático
+  (`npx serve`, nginx…) — usa ESM desde un CDN.
+-->
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>@webrek/mx-geo · vanilla JS</title>
+    <style>
+      body {
+        font-family: system-ui, sans-serif;
+        max-width: 860px;
+        margin: 2rem auto;
+      }
+      #mapa path {
+        cursor: pointer;
+        transition: opacity 0.15s;
+      }
+      #mapa path:hover {
+        opacity: 0.75;
+      }
+      #info {
+        min-height: 1.5rem;
+        font-weight: 600;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>México en vanilla JS</h1>
+    <p id="info">Pasa el mouse o haz clic en un estado.</p>
+    <div id="mapa"></div>
+
+    <script type="module">
+      import { mapaSVG } from "https://esm.sh/@webrek/mx-geo/svg";
+      import { estado, escalaJenks } from "https://esm.sh/@webrek/mx-geo";
+
+      const ventas = { "09": 320, 14: 210, 15: 280, 19: 180, 21: 130, 30: 140 };
+
+      // 1) Genera el mapa como cadena SVG e injértalo. Cero librerías de UI.
+      const mapa = document.querySelector("#mapa");
+      mapa.innerHTML = mapaSVG({ data: ventas, paleta: "azul", etiquetas: "abr" });
+
+      // 2) Interactividad por delegación de eventos: cada <path> trae data-cve.
+      const info = document.querySelector("#info");
+      const de = (ev) => ev.target.closest("path[data-cve]")?.dataset;
+
+      mapa.addEventListener("mousemove", (ev) => {
+        const d = de(ev);
+        if (d) info.textContent = `${d.nombre} — ${ventas[d.cve] ?? "sin"} ventas`;
+      });
+
+      mapa.addEventListener("click", (ev) => {
+        const d = de(ev);
+        if (!d) return;
+        const e = estado(d.cve); // catálogo completo, también sin React
+        alert(
+          `${e.nombre}\nCapital: ${e.capital}\nPoblación: ${e.poblacion.toLocaleString("es-MX")}`,
+        );
+      });
+
+      // 3) ¿Colores por rupturas naturales? Repinta los paths con escalaJenks.
+      const { color } = escalaJenks(Object.values(ventas), "azul", 3);
+      for (const p of mapa.querySelectorAll("path[data-cve]")) {
+        const v = ventas[p.dataset.cve];
+        if (v != null) p.setAttribute("fill", color(v));
+      }
+    </script>
+  </body>
+</html>

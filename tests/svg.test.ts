@@ -38,4 +38,21 @@ describe("mapaSVG (render en servidor)", () => {
     const noVacios = new Set(fills.filter((c) => c !== "#eeeeee" && c !== "#ffffff"));
     expect(noVacios.size).toBeGreaterThanOrEqual(2);
   });
+
+  it("cada path lleva data-cve y data-nombre (interactividad vanilla)", () => {
+    const svg = mapaSVG();
+    const cves = [...svg.matchAll(/data-cve="(\d{2})"/g)].map((m) => m[1]);
+    expect(new Set(cves).size).toBe(32);
+    expect(svg).toContain('data-cve="09" data-nombre="Ciudad de México"');
+  });
+});
+
+describe("mosaicoSVG (data-attrs)", () => {
+  it("cada celda lleva data-cve y data-nombre", async () => {
+    const { mosaicoSVG } = await import("../src/svg");
+    const svg = mosaicoSVG();
+    const cves = [...svg.matchAll(/data-cve="(\d{2})"/g)].map((m) => m[1]);
+    expect(new Set(cves).size).toBe(32);
+    expect(svg).toContain('data-cve="19" data-nombre="Nuevo León"');
+  });
 });

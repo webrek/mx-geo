@@ -111,10 +111,12 @@ export function mapaSVG(opts: OpcionesMapaSVG = {}): string {
     return interpolaPaleta(cols, t);
   };
 
+  // data-cve / data-nombre: para interactividad vanilla por delegación de
+  // eventos (e.target.closest("path[data-cve]").dataset.cve), sin React ni D3.
   const paths = fc.features
     .map(
       (f) =>
-        `<path d="${path(f) ?? ""}" fill="${fill(f.properties.cve)}" stroke="${stroke}" stroke-width="${strokeWidth}"/>`,
+        `<path d="${path(f) ?? ""}" fill="${fill(f.properties.cve)}" stroke="${stroke}" stroke-width="${strokeWidth}" data-cve="${esc(f.properties.cve)}" data-nombre="${esc(f.properties.nombre)}"/>`,
     )
     .join("");
 
@@ -217,7 +219,7 @@ export function mosaicoSVG(opts: OpcionesMosaicoSVG = {}): string {
     const val =
       v != null && Number.isFinite(v) ? (formatValue ? formatValue(v, e) : String(v)) : null;
     const abrY = val && mostrarValor ? TILE / 2 - 6 : TILE / 2;
-    let t = `<g transform="translate(${x} ${y})"><rect width="${TILE}" height="${TILE}" rx="7" fill="${f}" stroke="#ffffff" stroke-width="1"/>`;
+    let t = `<g transform="translate(${x} ${y})" data-cve="${esc(e.cve)}" data-nombre="${esc(e.nombre)}"><rect width="${TILE}" height="${TILE}" rx="7" fill="${f}" stroke="#ffffff" stroke-width="1"/>`;
     t += `<text x="${TILE / 2}" y="${abrY}" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="${tc}" font-family="sans-serif">${esc(e.abreviatura)}</text>`;
     if (val && mostrarValor) {
       t += `<text x="${TILE / 2}" y="${TILE / 2 + 11}" text-anchor="middle" dominant-baseline="central" font-size="9" fill="${tc}" font-family="sans-serif">${esc(val)}</text>`;
