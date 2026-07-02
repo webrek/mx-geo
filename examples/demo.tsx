@@ -13,14 +13,18 @@ import {
   REGION_POR_ESTADO,
   coloresCategorias,
   porCapita,
+  escalaJenks,
+  estadoDeCoordenada,
   estado as estadoDe,
   type Estado,
   type NombrePaleta,
+  type LonLat,
 } from "../src/index";
 import {
   MapaMunicipios,
   municipios,
   municipio as municipioDe,
+  municipioDeCoordenada,
   type Municipio,
 } from "../src/municipios";
 import { buscaCP, type ResultadoCP } from "../../mx-cp/src/index";
@@ -63,6 +67,22 @@ const TIENDAS: Record<string, number> = {
 const fmt = (n: number) => n.toLocaleString("es-MX");
 const rand = () => Math.floor(20 + Math.random() * Math.random() * 480);
 
+/**
+ * Acepta "lat, lon" (como copia Google Maps: `19.4326, -99.1332`) o "lon, lat"
+ * y devuelve siempre `[lon, lat]`. México: lon ∈ [-118, -86], lat ∈ [14, 33].
+ */
+function parseCoord(texto: string): LonLat | null {
+  const nums = texto
+    .split(/[,\s]+/)
+    .map(Number)
+    .filter(Number.isFinite);
+  if (nums.length !== 2) return null;
+  const [a, b] = nums as [number, number];
+  if (a >= -118 && a <= -86) return [a, b]; // ya venía lon, lat
+  if (b >= -118 && b <= -86) return [b, a]; // venía lat, lon (Google Maps)
+  return [b, a]; // fuera de México igual; estadoDeCoordenada dirá null
+}
+
 const PALETAS_DEMO: { valor: NombrePaleta; etiqueta: string }[] = [
   { valor: "azul", etiqueta: "Azul" },
   { valor: "walmart", etiqueta: "Walmart" },
@@ -98,6 +118,10 @@ function App() {
   const [cpErr, setCpErr] = useState<string | null>(null);
   const [cpDestacado, setCpDestacado] = useState<string | null>(null);
 
+  // Buscador por coordenada (geocodificación inversa, sin API)
+  const [coord, setCoord] = useState("");
+  const [jenks, setJenks] = useState(false);
+
   const base = useMemo<Record<string, number> | undefined>(() => {
     if (mode === "base" || mode === "regiones") return undefined;
     if (mode === "tiendas") return TIENDAS;
@@ -116,6 +140,12 @@ function App() {
     const vals = data ? Object.values(data) : [];
     return vals.length ? [Math.min(...vals), Math.max(...vals)] : [0, 0];
   }, [data]);
+
+  // Leyenda escalonada por rupturas naturales (Fisher-Jenks), conmutable.
+  const tramosJenks = useMemo(
+    () => (data && jenks ? escalaJenks(Object.values(data), paleta, 5).tramos : null),
+    [data, jenks, paleta],
+  );
 
   const muniData = useMemo<Record<string, number>>(() => {
     if (cpDestacado) return { [cpDestacado]: 1 };
@@ -138,6 +168,24 @@ function App() {
     setEstadoSel(e);
     setDrill(e);
     setMuniSel(municipioDe(r.cvegeo));
+  }
+
+  // Geocodificación inversa: coordenada → estado (sync) → municipio (chunk bajo demanda).
+  async function ubicar() {
+    setCpErr(null);
+    const punto = parseCoord(coord);
+    const cve = punto ? estadoDeCoordenada(punto) : null;
+    if (!punto || !cve) {
+      setCpErr("Coordenada inválida o fuera de México. Prueba `19.4326, -99.1332`.");
+      return;
+    }
+    const e = estadoDe(cve);
+    const cvegeo = await municipioDeCoordenada(punto);
+    setCpRes(null);
+    setEstadoSel(e);
+    setDrill(e);
+    setCpDestacado(cvegeo);
+    setMuniSel(cvegeo ? municipioDe(cvegeo) : null);
   }
 
   function abrirEstado(e: Estado) {
@@ -182,7 +230,10 @@ function App() {
     <div className="wrap">
       <header>
         <h1>@webrek/mx-geo</h1>
-        <p>Mapas de México · INEGI · choropleth, burbujas, regiones, tasas, zoom · sin API key</p>
+        <p>
+          Mapas de México · INEGI · choropleth, burbujas, regiones, tasas, Jenks, geocodificación
+          inversa, zoom · sin API key
+        </p>
       </header>
 
       {!drill ? (
@@ -243,6 +294,16 @@ function App() {
                 Por cápita
               </label>
             ) : null}
+            {mode !== "regiones" && tipo !== "burbujas" ? (
+              <label>
+                <input
+                  type="checkbox"
+                  checked={jenks}
+                  onChange={(e) => setJenks(e.target.checked)}
+                />{" "}
+                Leyenda Jenks
+              </label>
+            ) : null}
             <form
               className="cp"
               onSubmit={(e) => {
@@ -257,6 +318,20 @@ function App() {
                 onChange={(e) => setCp(e.target.value)}
               />
               <button type="submit">Buscar CP</button>
+            </form>
+            <form
+              className="cp"
+              onSubmit={(e) => {
+                e.preventDefault();
+                ubicar();
+              }}
+            >
+              <input
+                placeholder="lat, lon (ej. 19.4326, -99.1332)"
+                value={coord}
+                onChange={(e) => setCoord(e.target.value)}
+              />
+              <button type="submit">📍 Ubicar</button>
             </form>
             <button onClick={() => descargar("png")}>⬇ PNG</button>
             <button onClick={() => descargar("svg")}>⬇ SVG</button>
@@ -301,6 +376,14 @@ function App() {
                   tipo="categorias"
                   titulo="Región (Banxico)"
                   categorias={LEYENDA_REGIONES}
+                  className="leyenda"
+                />
+              ) : tramosJenks && (tipo === "choropleth" || tipo === "mosaico") ? (
+                <Leyenda
+                  tipo="cuantil"
+                  tramos={tramosJenks}
+                  titulo={`${unidad} (Jenks)`}
+                  formato={fmtVal}
                   className="leyenda"
                 />
               ) : data && (tipo === "choropleth" || tipo === "mosaico") ? (
@@ -362,10 +445,13 @@ function App() {
               <button onClick={() => setSeed((s) => s + 1)}>Aleatorio ⟳</button>
             ) : null}
             <span className="tipText">
-              {cpDestacado ? (
+              {cpDestacado && cpRes ? (
                 <>
-                  CP <b>{cpRes?.cp}</b> · {municipios(drill.cve).length} municipios en{" "}
-                  {drill.nombre}
+                  CP <b>{cpRes.cp}</b> · {municipios(drill.cve).length} municipios en {drill.nombre}
+                </>
+              ) : cpDestacado ? (
+                <>
+                  📍 <b>{muniSel?.nombre}</b> · coordenada ubicada en {drill.nombre}
                 </>
               ) : (
                 <>
@@ -431,8 +517,9 @@ function App() {
 
       <footer>
         Rueda para acercar, arrastra para mover, doble clic reinicia. · Geometría: INEGI, Marco
-        Geoestadístico. CP: SEPOMEX vía <code>@webrek/mx-cp</code>. Demo con{" "}
-        <code>&lt;MapaMexico&gt;</code>, <code>&lt;MapaBurbujas&gt;</code>,{" "}
+        Geoestadístico. CP: SEPOMEX vía <code>@webrek/mx-cp</code>. Coordenadas:{" "}
+        <code>estadoDeCoordenada</code> / <code>municipioDeCoordenada</code> (point-in-polygon, sin
+        red). Demo con <code>&lt;MapaMexico&gt;</code>, <code>&lt;MapaBurbujas&gt;</code>,{" "}
         <code>&lt;MapaMunicipios&gt;</code> y <code>&lt;Leyenda&gt;</code>.
       </footer>
     </div>
