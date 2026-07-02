@@ -9,7 +9,7 @@ y el versionado es [SemVer](https://semver.org/lang/es/).
 ### Agregado
 
 - **Geocodificación inversa**: `estadoDeCoordenada([lon, lat])` → CVE_ENT por
-  *point-in-polygon* sobre las geometrías de INEGI, sin red ni API keys; y
+  _point-in-polygon_ sobre las geometrías de INEGI, sin red ni API keys; y
   `municipioDeCoordenada([lon, lat])` → CVEGEO en `@webrek/mx-geo/municipios`
   (ubica el estado y carga solo su geometría, bajo demanda).
 - **Diagnóstico de joins**: `uneEstados(filas, clave)` cruza tus registros con
