@@ -474,7 +474,8 @@ estado y renderizas `<MapaMunicipios estado={cve} />` (ver `examples/demo.tsx`).
 En [`examples/`](./examples/) hay recetas cortas y copiables: choropleth con
 paleta, mapa por región, zonas a la medida, drill-down, normalizar una columna
 de texto, subir cifras municipales al mapa nacional, escalas sin React,
-cuantiles y el patrón de Next.js App Router.
+cuantiles, Jenks y umbrales, geocodificación inversa, joins con diagnóstico y
+el patrón de Next.js App Router.
 
 ## Datos, fuentes y precisión
 

@@ -24,6 +24,9 @@ así que puedes pegarlos tal cual en tu proyecto.
 | [`16-exportar.tsx`](./16-exportar.tsx)                     | Descargar el mapa como PNG o SVG (`descargaPNG`/`descargaSVG`).    |
 | [`17-vecinos.tsx`](./17-vecinos.tsx)                       | Resaltar un estado y sus colindantes (adyacencia).                 |
 | [`18-vue.md`](./18-vue.md)                                 | Usar el componente en Vue 3 (`@webrek/mx-geo/vue`).                |
+| [`19-coordenada-a-estado.ts`](./19-coordenada-a-estado.ts) | Geocodificación inversa: `[lon, lat]` → estado y municipio.        |
+| [`20-une-estados.ts`](./20-une-estados.ts)                 | Join con diagnóstico: emparejados, sin match y estados faltantes.  |
+| [`21-jenks-y-umbrales.tsx`](./21-jenks-y-umbrales.tsx)     | Escalas Jenks (rupturas naturales) y por umbrales de negocio.      |
 
 > La demo interactiva (`demo.tsx`) se compila a `docs/` y se publica en
 > <https://webrek.github.io/mx-geo/>.
