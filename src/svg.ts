@@ -85,7 +85,7 @@ export function mapaSVG(opts: OpcionesMapaSVG = {}): string {
   const fc = feature(
     estadosTopoJSON as never,
     (estadosTopoJSON as never as { objects: { estados: unknown } }).objects.estados as never,
-  ) as unknown as { features: Array<Feature<Geometry, { cve: string }>> };
+  ) as unknown as { features: Array<Feature<Geometry, { cve: string; nombre: string }>> };
 
   const projection = geoMercator().fitExtent(
     [
