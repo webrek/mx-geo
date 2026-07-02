@@ -19,6 +19,9 @@ export {
   interpolaPaleta,
   escalaSecuencial,
   escalaCuantil,
+  escalaJenks,
+  escalaUmbral,
+  rupturasJenks,
   escalaCategorica,
   coloresCategorias,
   type Paleta,
@@ -26,6 +29,7 @@ export {
   type NombrePaleta,
   type NombrePaletaDivergente,
   type TramoCuantil,
+  type EscalaTramos,
 } from "./colores";
 
 // Helpers de agregación

@@ -161,6 +161,24 @@ color(750); // "#3b82f6"
 const { color: c, tramos } = escalaCuantil(Object.values(ventas), "verde", 5);
 ```
 
+Además del cuantil hay dos clasificaciones escalonadas más — las tres devuelven
+`{ color, tramos }`, listas para la `<Leyenda tipo="cuantil">`:
+
+```ts
+import { escalaJenks, escalaUmbral, rupturasJenks } from "@webrek/mx-geo";
+
+// Rupturas naturales (Fisher-Jenks): agrupa valores parecidos y corta en los
+// saltos reales de los datos — el clásico de los choropleth.
+const jenks = escalaJenks(Object.values(ventas), "azul", 5);
+
+// Umbrales manuales: tú decides los cortes (extremos abiertos -∞/+∞).
+const umbral = escalaUmbral([100, 500, 1000], "rojo");
+umbral.color(750); // color de la clase [500, 1000)
+
+// ¿Solo quieres los cortes? (n-1 rupturas internas)
+rupturasJenks(Object.values(ventas), 5); // p. ej. [120, 480, 950, 2100]
+```
+
 ## Regiones / zonas
 
 El paquete trae la **regionalización de Banxico** (Norte, Centro Norte, Centro y

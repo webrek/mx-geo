@@ -233,3 +233,119 @@ export function coloresCategorias(
   const unicas = [...new Set(Object.values(categorias))].sort();
   return escalaCategorica(unicas, paleta);
 }
+
+/** Resultado de una escala escalonada: función de color + tramos para la leyenda. */
+export interface EscalaTramos {
+  color: (valor: number) => string;
+  tramos: TramoCuantil[];
+}
+
+/** Arma una escala escalonada a partir de cortes internos ya calculados. */
+function escalaDeCortes(
+  cortes: readonly number[],
+  paleta: PaletaInput,
+  min: number,
+  max: number,
+): EscalaTramos {
+  const cols = resuelvePaleta(paleta);
+  const clases = cortes.length + 1;
+  const colorClase = (g: number) => interpolaPaleta(cols, clases === 1 ? 1 : g / (clases - 1));
+  const claseDe = (valor: number) => {
+    let g = 0;
+    while (g < cortes.length && valor >= cortes[g]!) g++;
+    return g;
+  };
+  const tramos: TramoCuantil[] = [];
+  for (let g = 0; g < clases; g++) {
+    tramos.push({
+      desde: g === 0 ? min : cortes[g - 1]!,
+      hasta: g === clases - 1 ? max : cortes[g]!,
+      color: colorClase(g),
+    });
+  }
+  return { color: (valor: number) => colorClase(claseDe(valor)), tramos };
+}
+
+/**
+ * Cortes de **Jenks (rupturas naturales)** para partir `valores` en `n` clases.
+ * Minimiza la varianza dentro de cada clase (Fisher-Jenks); es la clasificación
+ * clásica de choropleth cuando los datos forman grupos naturales. Devuelve los
+ * `n - 1` cortes internos.
+ */
+export function rupturasJenks(valores: readonly number[], n = 5): number[] {
+  const data = valores.filter((v) => Number.isFinite(v)).sort((a, b) => a - b);
+  const m = data.length;
+  const k = Math.max(1, Math.min(n, m));
+  if (m === 0 || k === 1) return [];
+
+  const mat1: number[][] = Array.from({ length: m + 1 }, () => new Array(k + 1).fill(0));
+  const mat2: number[][] = Array.from({ length: m + 1 }, () => new Array(k + 1).fill(Infinity));
+  for (let i = 1; i <= k; i++) {
+    mat1[1]![i] = 1;
+    mat2[1]![i] = 0;
+  }
+  for (let l = 2; l <= m; l++) {
+    let s1 = 0;
+    let s2 = 0;
+    let w = 0;
+    for (let mm = 1; mm <= l; mm++) {
+      const i3 = l - mm + 1;
+      const val = data[i3 - 1]!;
+      w++;
+      s1 += val;
+      s2 += val * val;
+      const variance = s2 - (s1 * s1) / w;
+      const i4 = i3 - 1;
+      if (i4 !== 0) {
+        for (let j = 2; j <= k; j++) {
+          if (mat2[l]![j]! >= variance + mat2[i4]![j - 1]!) {
+            mat1[l]![j] = i3;
+            mat2[l]![j] = variance + mat2[i4]![j - 1]!;
+          }
+        }
+      }
+    }
+    mat1[l]![1] = 1;
+    mat2[l]![1] = s2 - (s1 * s1) / w;
+  }
+
+  const cortes: number[] = [];
+  let kk = k;
+  let idx = m;
+  while (kk > 1) {
+    const id = mat1[idx]![kk]! - 1;
+    cortes.push(data[id]!);
+    idx = id;
+    kk--;
+  }
+  return cortes.reverse();
+}
+
+/**
+ * Escala por **rupturas naturales de Jenks**: parte `valores` en `n` clases que
+ * agrupan valores parecidos y separan los saltos reales de los datos. Devuelve
+ * la función de color y los `tramos` (para la `<Leyenda tipo="cuantil">`).
+ */
+export function escalaJenks(
+  valores: readonly number[],
+  paleta: PaletaInput = "azul",
+  n = 5,
+): EscalaTramos {
+  const finitos = valores.filter((v) => Number.isFinite(v));
+  if (finitos.length === 0) return escalaDeCortes([], paleta, 0, 0);
+  const cortes = rupturasJenks(finitos, n);
+  return escalaDeCortes(cortes, paleta, Math.min(...finitos), Math.max(...finitos));
+}
+
+/**
+ * Escala por **umbrales manuales**: tú das los cortes (p. ej. `[100, 500, 1000]`
+ * → 4 clases) y asigna un color por clase. Los extremos son abiertos (`-∞`, `+∞`).
+ * Devuelve función de color + `tramos` para la leyenda.
+ */
+export function escalaUmbral(
+  cortes: readonly number[],
+  paleta: PaletaInput = "azul",
+): EscalaTramos {
+  const c = [...cortes].filter((v) => Number.isFinite(v)).sort((a, b) => a - b);
+  return escalaDeCortes(c, paleta, -Infinity, Infinity);
+}
